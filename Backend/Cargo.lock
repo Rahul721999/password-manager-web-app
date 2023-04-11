@@ -1594,6 +1594,7 @@ dependencies = [
  "bson",
  "chrono",
  "dotenv",
+ "lazy_static",
  "rand",
  "regex",
  "serde",

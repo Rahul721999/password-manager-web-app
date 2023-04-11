@@ -3,7 +3,7 @@ use thiserror::Error;
 use actix_web::{error::ResponseError, HttpResponse, http::{header::ContentType, StatusCode}};
 #[derive(Error, Debug)]
 pub enum AppError{
-    #[error("AuthError : {0}")]
+    #[error("{0}")]
     AuthError(String),
     #[error("{0}")]
     InternalServerError(String),

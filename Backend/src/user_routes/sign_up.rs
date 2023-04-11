@@ -5,51 +5,66 @@ use crate::{
     utils::hash_pass,
     utils::{AppError, valid_email, valid_password}
 };
-use actix_web::{HttpResponse, web, Responder};
+use actix_web::{HttpResponse, web, Responder, App, http::header::HttpDate};
 use anyhow::Context;
 use serde::Deserialize;
 use sqlx::PgPool;
 use tracing::info;
 use sqlx::types::Uuid;
 use validator::{Validate, ValidationError};
+use regex::Regex;
+
 #[derive(Debug, Deserialize, Clone, Validate)]
 pub struct NewUser{
     #[validate(custom(
-        function = "valid_email", 
-        message = "Invalid email"))]
+        function = "valid_email"))]
     pub email : String,
-    #[validate(custom(function = "valid_password",
-        message = "Must contain at least one upper-case, lower-case & a no."))]
+    #[validate(
+        custom(
+            function = "valid_password"))]
+
     pub pass : String,
     pub first_name : String,
     pub last_name : String,
 }
 #[tracing::instrument(
-	name="Web login request"
+	name="Web signin request"
 	skip_all
 )]
 pub async fn sign_up(
     new_user : web::Json<NewUser>,
     db : web::Data<PgPool>
 )
--> HttpResponse
+-> Result<HttpResponse, AppError>
 {  
-//1. validate the email first..
-
+//1. form validation..
+    let _res =match new_user.validate(){
+        Ok(..) => {},
+        Err(err) =>{
+            tracing::info!("validation failed");
+            // return Err(AppError::Other(err))}
+            match err.field_errors() {
+                errors if errors.contains_key("email")=>{
+                    dbg!(errors);
+                    return Err(AppError::AuthError("Invalid email".to_string()))
+                }
+                errors if errors.contains_key("pass") =>{
+                    return Err(AppError::AuthError("Must contain at least one upper-case, one lower-case,\na number & a special char".to_string()))
+                }
+                _ => return Err(AppError::BadRequest("Invalid input"))
+            }   
+        }
+    };
 //2. first check if the email already present in the DB.
     let data_present = sqlx::query_scalar::<_, bool>("SELECT EXISTS(SELECT 1 FROM user_cred WHERE email = $1)")
     .bind(new_user.email.clone())
     .fetch_one(db.as_ref())
     .await
-    .map(|_| true)
-    .map_err(|e| {
-        // Return a 500 error if there's a database error.
-        HttpResponse::InternalServerError().body("email already exists")
-    }).expect("failed to get the error msg.");
+    .map_err(|_| HttpResponse::InternalServerError().body("Failed to check if email exists")).expect("failed to map the error");
 
     if data_present{
-            tracing::info_span!("email already present in the db"); 
-            return HttpResponse::InternalServerError().body("email already exists");
+            tracing::info!("Email already present in the db"); 
+            return Err(AppError::EmailExists);
         }
         
 //3. hash the pass
@@ -68,6 +83,7 @@ pub async fn sign_up(
     ).execute(db.as_ref())
     .await
     .expect("failed to execute the query");
+    tracing::info!("new user with email: {} signed in successfuly", new_user.email.clone());
 
-    HttpResponse::Ok().body("User added Successfully")
+    Ok(HttpResponse::Ok().body("User added Successfully"))
 }
