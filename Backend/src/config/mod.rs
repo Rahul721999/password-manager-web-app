@@ -5,7 +5,7 @@ use serde::Deserialize;
 use sqlx::{postgres::PgPoolOptions, PgPool};
 use std::env;
 use tracing::{debug,instrument};
-use tracing_subscriber::{self, EnvFilter};
+// use tracing_subscriber::{self, EnvFilter};
 #[derive(Debug, Deserialize)]
 pub struct Config {
     pub host: String,
@@ -20,10 +20,6 @@ impl Config {
         // loadinf env variables
         dotenv().ok();
 
-        // setting up logging system
-        tracing_subscriber::fmt()
-            .with_env_filter(EnvFilter::from_default_env())
-            .init();
         debug!("Loading env Configuration");
 
         // get the port id from .env

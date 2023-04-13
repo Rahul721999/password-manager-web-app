@@ -7,7 +7,7 @@ use crate::{
 use actix_web::{HttpResponse, web};
 use serde::Deserialize;
 use sqlx::PgPool;
-use tracing::{info_span, info, error, Instrument};
+use tracing::{info_span, error, Instrument};
 use sqlx::types::Uuid;
 use validator::Validate;
 
@@ -26,7 +26,12 @@ pub struct NewUser{
 }
 #[tracing::instrument(
 	name="Web signin request"
-	skip_all
+	skip(new_user, db)
+    fields(
+        // req_id = %Uuid::new_v4(),
+        email = %new_user.email.clone(),
+        name = %new_user.first_name.clone()
+    )
 )]
 pub async fn sign_up(
     new_user : web::Json<NewUser>,
@@ -34,28 +39,19 @@ pub async fn sign_up(
 )
 -> Result<HttpResponse, AppError>
 { 
-// logging
-    let req_id = Uuid::new_v4();
-    // info!("SignUp request: req_id : {}, email: {}, name: {}", req_id, new_user.email.clone(), new_user.first_name.clone());
-    let request_span = info_span!(
-        "Adding a new subscriber.",
-        %req_id,
-        email = %new_user.email.clone(),
-        name= %new_user.first_name.clone()
-        );
-    let _res  = request_span.enter();
 //1. form validation..
     let _res =match new_user.validate(){
         Ok(..) => {},
         Err(err) =>{
-            error!("Validation error");
+            
             match err.field_errors() {
                 errors if errors.contains_key("email")=>{
+                    error!("Email Validation error");
                     return Err(AppError::AuthError("Invalid email".to_string()))
                 }
                 errors if errors.contains_key("pass") =>{
-                    return Err(AppError::AuthError(format!("Must contain at least one upper-case, one lower-case,
-        a number & a special char")))
+                    error!("Password Validation error");
+                    return Err(AppError::AuthError(format!("Must contain at least one upper-case, one lower-case, a number & a special char")))
                 }
                 _ => return Err(AppError::BadRequest("Invalid input"))
             }   
@@ -69,7 +65,7 @@ pub async fn sign_up(
     .map_err(|_| AppError::InternalServerError("Failed to check if email exists".to_string()))?;
 
     if data_present{
-            info!("Email : {} already present in the db", new_user.email.clone()); 
+            error!("Email : <{}> already present in the db", new_user.email.clone()); 
             return Err(AppError::EmailExists);
         }
         
@@ -88,8 +84,8 @@ pub async fn sign_up(
         new_user.last_name.clone(),
     ).execute(db.as_ref())
     .await{
-        Ok(_) =>  info!("{} successfully added",new_user.email.clone()),
-        Err(_) => tracing::error!("Failed to add User")
+        Ok(_) =>  info_span!("successfully added"),
+        Err(_) => tracing::error_span!("Failed to add User")
     };
 
     Ok(HttpResponse::Ok().body("User added Successfully"))

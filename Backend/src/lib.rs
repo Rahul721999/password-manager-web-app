@@ -13,3 +13,6 @@ pub use utils::{
     error_module::{AppError},
     validator_module::{valid_email, valid_password},
 };
+
+pub mod log_config;
+pub use log_config::{get_subscriber, init_subscriber};
