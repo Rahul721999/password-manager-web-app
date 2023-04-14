@@ -1,7 +1,7 @@
 use actix_web::{HttpServer, App, web, middleware::{self, Logger}};
 use tracing::info;
 use crate::Config;
-use lib::{health_check::greet, sign_up::sign_up};
+use lib::{health_check::greet, sign_up::sign_up, login};
 use tracing_actix_web::TracingLogger;
 
 pub async fn start(config : Config) -> std::io::Result<()>{
@@ -21,6 +21,7 @@ pub async fn start(config : Config) -> std::io::Result<()>{
                     // .wrap(Logger::default())
                     .wrap(TracingLogger::default())    
                     .route("/SignUp", web::post().to(sign_up))
+                    .route("/LogIn", web::get().to(login))
             )
     })
     .bind(format!("{}:{}", config.host, config.port))?

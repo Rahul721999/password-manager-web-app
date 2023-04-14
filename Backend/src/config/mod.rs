@@ -4,7 +4,7 @@ use dotenv::dotenv;
 use serde::Deserialize;
 use sqlx::{postgres::PgPoolOptions, PgPool};
 use std::env;
-use tracing::{debug,instrument};
+use tracing::debug;
 // use tracing_subscriber::{self, EnvFilter};
 #[derive(Debug, Deserialize)]
 pub struct Config {
@@ -15,7 +15,6 @@ pub struct Config {
 
 impl Config {
     /// this fn is to load configuration from env
-    #[instrument]
     pub fn from_env() -> anyhow::Result<Config> {
         // loadinf env variables
         dotenv().ok();
@@ -35,7 +34,7 @@ impl Config {
         })
     }
 
-    #[instrument]
+
     pub async fn run(database_url : String) -> PgPool {
         debug!("Connecting to PSQL db");
         match PgPoolOptions::new()

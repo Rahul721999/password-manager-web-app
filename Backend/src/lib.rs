@@ -9,7 +9,7 @@ pub use models::user_schema::*;
 
 pub mod utils;
 pub use utils::{
-    hashing::hash_pass,
+    hashing::{hash_pass, verify_pass},
     error_module::{AppError},
     validator_module::{valid_email, valid_password},
 };

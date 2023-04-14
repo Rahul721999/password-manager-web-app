@@ -11,9 +11,9 @@ pub fn get_subscriber<Sink>(
 {
     dotenv().ok();
     let name = std::env::var("PROJECT_NAME").expect("Failed to load project name");
-    let log_lvl = std::env::var("RUST_LOG").expect("Failed to set RUST_LOG");
+    // let log_lvl = std::env::var("RUST_LOG").expect("Failed to set RUST_LOG");
     let env_filter = EnvFilter::try_from_default_env()
-        .unwrap_or_else(|_| EnvFilter::new(log_lvl));
+        .unwrap_or_else(|_| EnvFilter::new("info"));
     let formatter_layer = BunyanFormattingLayer::new(name, 
         //output the formatted spans to stdout
         sink

@@ -1,5 +1,3 @@
-// #![allow(unused)]
-
 use crate::{
     utils::hash_pass,
     utils::{AppError, valid_email, valid_password}
@@ -7,7 +5,7 @@ use crate::{
 use actix_web::{HttpResponse, web};
 use serde::Deserialize;
 use sqlx::PgPool;
-use tracing::{info_span, error, Instrument};
+use tracing::{info_span, error};
 use sqlx::types::Uuid;
 use validator::Validate;
 
@@ -28,7 +26,6 @@ pub struct NewUser{
 	name="Web signin request"
 	skip(new_user, db)
     fields(
-        // req_id = %Uuid::new_v4(),
         email = %new_user.email.clone(),
         name = %new_user.first_name.clone()
     )
@@ -60,7 +57,6 @@ pub async fn sign_up(
 //2. first check if the email already present in the DB.
     let data_present = sqlx::query_scalar::<_, bool>("SELECT EXISTS(SELECT 1 FROM user_cred WHERE email = $1)").bind(new_user.email.clone())
     .fetch_one(db.as_ref())
-    .instrument(info_span!("Searching for the details in db"))
     .await
     .map_err(|_| AppError::InternalServerError("Failed to check if email exists".to_string()))?;
 
@@ -79,7 +75,7 @@ pub async fn sign_up(
         "INSERT INTO user_cred (id, email, password_hash, first_name, last_name) VALUES ($1, $2, $3, $4, $5)",
         Uuid::new_v4().into(),
         new_user.email.clone(),
-        hash_pass.clone(),
+        hash_pass,
         new_user.first_name.clone(),
         new_user.last_name.clone(),
     ).execute(db.as_ref())
