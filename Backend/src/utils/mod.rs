@@ -6,3 +6,6 @@ pub use error_module::*;
 
 pub mod validator_module;
 pub use validator_module::{valid_email, valid_password};
+
+pub mod gen_token;
+pub use gen_token::*;

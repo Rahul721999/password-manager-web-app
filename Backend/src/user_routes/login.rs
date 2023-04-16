@@ -1,11 +1,15 @@
 use actix_web::{HttpResponse, web};
 use crate::{AppError,
     utils::{verify_pass, valid_email, valid_password},
+    TokenClaims,
+    UserCred,
+    Config
 };
-use sqlx::{PgPool, Row};
+use sqlx::{PgPool};
 use tracing::{error, Instrument, error_span};
 use serde::Deserialize;
 use validator::Validate;
+use chrono::{Utc, Duration};
 #[derive(Debug, Deserialize, Validate)]
 pub struct LoginCred{
     #[validate(custom(
@@ -28,7 +32,8 @@ pub struct LoginCred{
 )]
 pub async fn login(
     user_cred : web::Json<LoginCred>,
-    db : web::Data<PgPool>
+    db : web::Data<PgPool>,
+    config : web::Data<Config>
 ) -> Result<HttpResponse, AppError>{
     //1. form validation..
     let _res =match user_cred.validate(){
@@ -50,8 +55,7 @@ pub async fn login(
     };
 
     // 2. fetch the hashed_password from the db..
-    let row = match sqlx::query("SELECT password_hash FROM user_cred WHERE email = $1")
-                                    .bind(user_cred.email.clone())
+    let row = match sqlx::query_as!(UserCred,"SELECT * FROM user_cred WHERE email = $1", user_cred.email.clone())
                                     .fetch_optional(db.as_ref())
                                     .instrument(error_span!("Db query"))
                                     .await{
@@ -61,25 +65,34 @@ pub async fn login(
                                                 return Err(AppError::InternalServerError(format!("email: {} not present, Try SignIn first", user_cred.email.clone()))); 
                                             } 
                                         },
-                                        Err(_err) =>  {
-                                            return Err(AppError::InternalServerError(format!("Error : {}", _err)));
+                                        Err(err) =>  {
+                                            return Err(AppError::InternalServerError(format!("Error : {}", err)));
                                         },
                                     };
 
     
-    // let password: String = password.map(|r| r.get("password_hash")).expect("failed to get password");
-    let password: String = match row.try_get("password_hash"){
-        Ok(pass) => pass,
+    let password = row.password_hash;
+    // 3. compare the hashed_pass with entered_pass
+    if !verify_pass(user_cred.password.clone().as_str(), password.as_str()).await {
+        return Err(AppError::AuthError("Unauthorize User".to_string()));   
+    }
+
+    // 4. if credectials matches generate & return JWT
+    let claim = TokenClaims{
+        email : user_cred.email.clone(),
+        exp : (Utc::now() + Duration::minutes(60)).timestamp() as usize,
+    };
+
+    let token  = match claim.generate(config.as_ref()){
+        Ok(token) => token,
         Err(_err) => {
-            error_span!("Failed to get the password");
-            return Err(AppError::InternalServerError(format!("Error : {}", _err)));
+            error_span!("failed to generate token");
+            return Err(AppError::InternalServerError("Failed to gen JWT".to_string()))
         }
     };
-    // 3. compare the hashed_pass with entered_pass
-    if verify_pass(user_cred.password.clone().as_str(), password.as_str()).await {
-        return Ok(HttpResponse::Ok().finish())
-    }else {
-        return Err(AppError::AuthError("Unauthorize User".to_string()))
-    }
+
+    Ok(HttpResponse::Ok()
+        .json(serde_json::json!({"message" : "Success", "Authorization" : token}))
+    )
 
 }
