@@ -83,7 +83,7 @@ pub async fn login(
         exp : (Utc::now() + Duration::minutes(60)).timestamp() as usize,
     };
 
-    let token  = match claim.generate(config.as_ref()){
+    let token  = match claim.generate(&config){
         Ok(token) => token,
         Err(_err) => {
             error_span!("failed to generate token");

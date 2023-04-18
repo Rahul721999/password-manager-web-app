@@ -1,7 +1,7 @@
 #![allow(unused)]
 mod config;
 mod start_server;
-use crate::config::Config;
+use lib::config::Config;
 use lib::{get_subscriber, init_subscriber};
 use start_server::start;
 use tracing_subscriber::{EnvFilter, FmtSubscriber};

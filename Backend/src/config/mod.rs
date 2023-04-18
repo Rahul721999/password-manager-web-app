@@ -1,12 +1,12 @@
 // #![allow(unused)]
 use anyhow::Context;
 use dotenv::dotenv;
-use serde::Deserialize;
 use sqlx::{postgres::PgPoolOptions, PgPool};
 use std::{env};
 use tracing::debug;
 // use tracing_subscriber::{self, EnvFilter};
-#[derive(Debug, Deserialize, Clone)]
+use serde::{Deserialize, Serialize};
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Config {
     pub host: String,
     pub port: i32,
@@ -33,7 +33,7 @@ impl Config {
             port,
             db_url: env::var("DATABASE_URL").context("DATABASE_URL is not set")?,
             jwt_key : env::var("JWT_KEY").context("JWT_KEY is not set")?,
-            jwt_exp : exp,
+            jwt_exp : exp
         })
     }
 

@@ -1,7 +1,11 @@
 use actix_web::{HttpServer, App, web, middleware::{self, Logger}};
 use tracing::info;
-use crate::{Config, config::run};
-use lib::{health_check::greet, sign_up::sign_up, login};
+use lib::{health_check::greet, 
+    sign_up::sign_up, 
+    login,
+    del_acc, 
+    config::{Config, run}
+};
 use tracing_actix_web::TracingLogger;
 
 pub async fn start(config : Config) -> std::io::Result<()>{
@@ -21,6 +25,7 @@ pub async fn start(config : Config) -> std::io::Result<()>{
                     .wrap(TracingLogger::default())    
                     .route("/SignUp", web::post().to(sign_up))
                     .route("/LogIn", web::post().to(login))
+                    .route("/Delete-acc", web::post().to(del_acc))
             )
             .app_data(web::Data::new(db.clone()))
             .app_data(configuration.clone())
