@@ -5,7 +5,7 @@ use crate::{
 use actix_web::{HttpResponse, web};
 use serde::Deserialize;
 use sqlx::PgPool;
-use tracing::{info_span, error};
+use tracing::{info, error};
 use sqlx::types::Uuid;
 use validator::Validate;
 
@@ -23,7 +23,7 @@ pub struct NewUser{
     pub last_name : String,
 }
 #[tracing::instrument(
-	name="Web signin request"
+	name="🚩Web signin request"
 	skip(new_user, db)
     fields(
         email = %new_user.email.clone(),
@@ -43,11 +43,11 @@ pub async fn sign_up(
             
             match err.field_errors() {
                 errors if errors.contains_key("email")=>{
-                    error!("Email Validation error");
+                    error!("❌ Email Validation error");
                     return Err(AppError::AuthError("Invalid email".to_string()))
                 }
                 errors if errors.contains_key("pass") =>{
-                    error!("Password Validation error");
+                    error!("❌ Password Validation error");
                     return Err(AppError::AuthError(format!("Must contain at least one upper-case, one lower-case, a number & a special char")))
                 }
                 _ => return Err(AppError::BadRequest("Invalid input"))
@@ -61,7 +61,7 @@ pub async fn sign_up(
     .map_err(|_| AppError::InternalServerError("Failed to check if email exists".to_string()))?;
 
     if data_present{
-            error!("Email : <{}> already present in the db", new_user.email.clone()); 
+            info!("🚫 Email : {} already present in the db", new_user.email.clone()); 
             return Err(AppError::EmailExists);
         }
         
@@ -80,8 +80,8 @@ pub async fn sign_up(
         new_user.last_name.clone(),
     ).execute(db.as_ref())
     .await{
-        Ok(_) =>  info_span!("successfully added"),
-        Err(_) => tracing::error_span!("Failed to add User")
+        Ok(_) =>  info!("✅successfully added"),
+        Err(_) => error!("❌Failed to add User")
     };
 
     Ok(HttpResponse::Ok().body("User added Successfully"))

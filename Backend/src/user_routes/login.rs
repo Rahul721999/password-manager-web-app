@@ -6,7 +6,7 @@ use crate::{AppError,
     Config
 };
 use sqlx::{PgPool};
-use tracing::{error, Instrument, error_span};
+use tracing::{error};
 use serde::Deserialize;
 use validator::Validate;
 use chrono::{Utc, Duration};
@@ -24,8 +24,8 @@ pub struct LoginCred{
 
 
 #[tracing::instrument(
-    name = "Web Login Req"
-    skip (db, user_cred)
+    name = "🚩 Web Login Req"
+    skip (db, user_cred, config)
     fields(
         email = %user_cred.email.clone()
     )
@@ -42,11 +42,11 @@ pub async fn login(
             
             match err.field_errors() {
                 errors if errors.contains_key("email")=>{
-                    error!("Email Validation error");
+                    error!("❌ Email Validation error");
                     return Err(AppError::AuthError("Invalid email".to_string()))
                 }
                 errors if errors.contains_key("pass") =>{
-                    error!("Password Validation error");
+                    error!("❌ Password Validation error");
                     return Err(AppError::AuthError(format!("Passwod validation error")))
                 }
                 _ => return Err(AppError::BadRequest("Invalid input"))
@@ -57,7 +57,6 @@ pub async fn login(
     // 2. fetch the hashed_password from the db..
     let row = match sqlx::query_as!(UserCred,"SELECT * FROM user_cred WHERE email = $1", user_cred.email.clone())
                                     .fetch_optional(db.as_ref())
-                                    .instrument(error_span!("Db query"))
                                     .await{
                                         Ok(row) => {
                                             if let Some(r) = row{ r } 
@@ -86,11 +85,11 @@ pub async fn login(
     let token  = match claim.generate(&config){
         Ok(token) => token,
         Err(_err) => {
-            error_span!("failed to generate token");
+            error!("❌ failed to generate token");
             return Err(AppError::InternalServerError("Failed to gen JWT".to_string()))
         }
     };
-
+    tracing::info!("✅ Logged In Successfully");
     Ok(HttpResponse::Ok()
         .json(serde_json::json!({"message" : "Success", "Authorization" : token}))
     )

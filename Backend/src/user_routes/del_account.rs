@@ -5,7 +5,7 @@ use crate::{
 use actix_web::{web, HttpResponse};
 use serde::Deserialize;
 use sqlx::PgPool;
-use tracing::{error, info_span, Instrument};
+use tracing::{error, info};
 use validator::Validate;
 
 #[derive(Debug, Deserialize, Validate)]
@@ -17,8 +17,8 @@ pub struct LoginCred {
 }
 
 #[tracing::instrument(
-    name = "Web Del_Acc Req"
-    skip (db, user_cred)
+    name = "🚩 Web Del_Acc Req"
+    skip (db, user_cred, _config)
     fields(
         email = %user_cred.email.clone()
     )
@@ -26,18 +26,18 @@ pub struct LoginCred {
 pub async fn del_acc(
     user_cred: web::Json<LoginCred>,
     db: web::Data<PgPool>,
-    config: web::Data<Config>,
+    _config: web::Data<Config>,
 ) -> Result<HttpResponse, AppError> {
     //1. form validation..
     let _res = match user_cred.validate() {
         Ok(..) => {}
         Err(err) => match err.field_errors() {
             errors if errors.contains_key("email") => {
-                error!("Email Validation error");
+                error!("❌Email Validation error");
                 return Err(AppError::AuthError("Invalid email".to_string()));
             }
             errors if errors.contains_key("pass") => {
-                error!("Password Validation error");
+                error!("❌Password Validation error");
                 return Err(AppError::AuthError(format!("Passwod validation error")));
             }
             _ => return Err(AppError::BadRequest("Invalid input")),
@@ -51,7 +51,6 @@ pub async fn del_acc(
         user_cred.email.clone()
     )
     .fetch_optional(db.as_ref())
-    .instrument(info_span!("Searching query"))
     .await
     {
         Ok(row) => {
@@ -59,7 +58,7 @@ pub async fn del_acc(
                 r
             } else {
                 return Err(AppError::InternalServerError(format!(
-                    "email: {} not present, Try SignIn first",
+                    "Email: {} not present, Try SignIn first",
                     user_cred.email.clone()
                 )));
             }
@@ -80,10 +79,10 @@ pub async fn del_acc(
         user_cred.email.clone()
     )
     .execute(db.as_ref())
-    .instrument(info_span!("Delete Query"))
     .await
     {
         Ok(_res) => {
+            info!("✅ Account deleted Successfully");
             return Ok(HttpResponse::Ok()
                 .json(serde_json::json!({"message" : "Account Deleted Successfully"})));
         }

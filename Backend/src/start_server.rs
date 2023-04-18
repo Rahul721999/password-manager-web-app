@@ -16,13 +16,13 @@ pub async fn start(config : Config) -> std::io::Result<()>{
     info!("🚀 Starting server at {}:{}",config.host, config.port);
     HttpServer::new( move ||{
         App::new()
-            .wrap(TracingLogger::default())
+            // .wrap(TracingLogger::default())
             .route("/health-check", web::get().to(greet))
             .service(
                 web::scope("/Auth")
                     .app_data(web::Data::new(db.clone()))
                     .app_data(configuration.clone())
-                    .wrap(TracingLogger::default())    
+                    // .wrap(TracingLogger::default())    
                     .route("/SignUp", web::post().to(sign_up))
                     .route("/LogIn", web::post().to(login))
                     .route("/Delete-acc", web::post().to(del_acc))
