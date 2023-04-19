@@ -17,7 +17,7 @@ pub use utils::{
 };
 
 pub mod log_config;
-pub use log_config::{get_subscriber, init_subscriber};
+pub use log_config::{get_subscriber, init_subscriber, DomainSpanBuilder};
 
 pub mod middleware;
 pub use middleware::MyMiddleware;

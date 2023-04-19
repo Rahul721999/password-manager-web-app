@@ -24,7 +24,7 @@ pub struct NewUser{
 }
 #[tracing::instrument(
 	name="🚩Web signin request"
-	skip(new_user, db)
+	skip_all
     fields(
         email = %new_user.email.clone(),
         name = %new_user.first_name.clone()
@@ -58,10 +58,10 @@ pub async fn sign_up(
     let data_present = sqlx::query_scalar::<_, bool>("SELECT EXISTS(SELECT 1 FROM user_cred WHERE email = $1)").bind(new_user.email.clone())
     .fetch_one(db.as_ref())
     .await
-    .map_err(|_| AppError::InternalServerError("Failed to check if email exists".to_string()))?;
+    .map_err(|_| AppError::InternalServerError("EXIST query failed".to_string()))?;
 
     if data_present{
-            info!("🚫 Email : {} already present in the db", new_user.email.clone()); 
+            info!("🚫Email : {} already present in the db", new_user.email.clone()); 
             return Err(AppError::EmailExists);
         }
         
@@ -80,7 +80,7 @@ pub async fn sign_up(
         new_user.last_name.clone(),
     ).execute(db.as_ref())
     .await{
-        Ok(_) =>  info!("✅successfully added"),
+        Ok(_) =>  info!("✅User added successfully"),
         Err(_) => error!("❌Failed to add User")
     };
 
