@@ -1,6 +1,6 @@
 use crate::{
     utils::{valid_email, valid_password, verify_pass},
-    AppError, Config, UserCred,
+    AppError, Config, UserCred, MyMiddleware,
 };
 use actix_web::{web, HttpResponse};
 use serde::Deserialize;
@@ -26,6 +26,7 @@ pub struct LoginCred {
 pub async fn del_acc(
     user_cred: web::Json<LoginCred>,
     db: web::Data<PgPool>,
+    token : MyMiddleware,
     _config: web::Data<Config>,
 ) -> Result<HttpResponse, AppError> {
     //1. form validation..

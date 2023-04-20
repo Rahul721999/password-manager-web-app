@@ -1,6 +1,7 @@
 use actix_web::{Responder, HttpResponse};
 use serde_json::json;
 use tracing::info;
+
 #[tracing::instrument(
     name ="🚩Health-Check"
     skip_all
@@ -8,5 +9,5 @@ use tracing::info;
 pub async fn greet() -> impl Responder {
     info!("✅ Health-check fn called");
     HttpResponse::Ok()
-        .json(json!({"status" : "Success"}))
+        .json(json!({"message" : "Health-Check Successful"}))
 }

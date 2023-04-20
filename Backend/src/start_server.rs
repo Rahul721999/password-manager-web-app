@@ -1,35 +1,49 @@
-use actix_web::{HttpServer, App, web, middleware::{self, Logger, Compat}};
-use tracing::info;
-use lib::{health_check::greet, 
-    sign_up::sign_up, 
-    login,
-    del_acc,
-    DomainSpanBuilder, 
-    config::{Config, run},
-    MyMiddleware
+use actix_cors::Cors;
+use actix_web::{
+    http::header,
+    middleware::{self, Compat, Logger},
+    web, App, HttpServer,
 };
+use lib::{
+    config::{run, Config},
+    del_acc,
+    health_check::greet,
+    login,
+    sign_up::sign_up,
+    DomainSpanBuilder, MyMiddleware,
+};
+use tracing::info;
 use tracing_actix_web::TracingLogger;
 
-pub async fn start(config : Config) -> std::io::Result<()>{
+pub async fn start(config: Config) -> std::io::Result<()> {
     //get the db
     let configuration = web::Data::new(config.clone());
     let db = run(&config.db_url).await;
-    let middleware = MyMiddleware{};
+    let middleware = MyMiddleware {};
+
     //start the app
-    info!("🚀 Starting server at {}:{}",config.host, config.port);
-    HttpServer::new( move ||{
+    info!("🚀 Starting server at {}:{}", config.host, config.port);
+    HttpServer::new(move || {
+        // set cors
+        let cors = Cors::default()
+            .allowed_origin("https://localhost:7000")
+            .allowed_methods(vec!["GET", "POST"])
+            .allowed_headers(vec![header::AUTHORIZATION, header::ACCEPT])
+            .allowed_header(header::CONTENT_TYPE)
+            .max_age(3600);
+
         App::new()
+            .wrap(cors)
             .wrap(TracingLogger::default())
-            .wrap(middleware)
             .route("/health-check", web::get().to(greet))
             .service(
                 web::scope("/Auth")
                     .app_data(web::Data::new(db.clone()))
                     .app_data(configuration.clone())
-                    .wrap(Compat::new(TracingLogger::default()))    
+                    .wrap(Compat::new(TracingLogger::default()))
                     .route("/SignUp", web::post().to(sign_up))
                     .route("/LogIn", web::post().to(login))
-                    .route("/Delete-acc", web::post().to(del_acc))
+                    .route("/Delete-acc", web::post().to(del_acc)),
             )
             .wrap(TracingLogger::<DomainSpanBuilder>::new())
             .app_data(web::Data::new(db.clone()))

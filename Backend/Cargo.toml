@@ -59,3 +59,4 @@ secrecy = { version = "0.8.0", features = ["serde"] }
 #jwt token
 jsonwebtoken = {version = "8.3.0"}
 futures = "0.3.28"
+actix-cors = "0.6.4"
