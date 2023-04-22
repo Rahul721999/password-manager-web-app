@@ -3,6 +3,7 @@ use actix_web::{
 };
 use futures::future::Ready;
 use crate::{AppError};
+use jsonwebtoken::Validation;
 
 #[derive(Debug)]
 pub struct MyMiddleware{
