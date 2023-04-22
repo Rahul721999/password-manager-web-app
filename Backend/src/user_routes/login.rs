@@ -61,7 +61,7 @@ pub async fn login(
                                         Ok(row) => {
                                             if let Some(r) = row{ r } 
                                             else {
-                                                return Err(AppError::InternalServerError(format!("email: {} not present, Try SignIn first", user_cred.email.clone()))); 
+                                                return Err(AppError::InternalServerError(format!("{} not present, Try SignIn first", user_cred.email.clone()))); 
                                             } 
                                         },
                                         Err(err) =>  {

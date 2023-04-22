@@ -19,7 +19,6 @@ pub async fn start(config: Config) -> std::io::Result<()> {
     //get the db
     let configuration = web::Data::new(config.clone());
     let db = run(&config.db_url).await;
-    let middleware = MyMiddleware {};
 
     //start the app
     info!("🚀 Starting server at {}:{}", config.host, config.port);
