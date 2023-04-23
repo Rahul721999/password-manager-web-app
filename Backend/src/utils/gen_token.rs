@@ -1,5 +1,5 @@
 use serde::{Serialize, Deserialize};
-use jsonwebtoken::{Header, encode, decode, EncodingKey, DecodingKey, errors::{ErrorKind, Error}, Validation, Algorithm};
+use jsonwebtoken::{Header, encode, decode, EncodingKey, DecodingKey, errors::{ErrorKind}, Validation};
 use crate::AppError;
 use crate::config::Config;
 #[derive(Debug, Serialize, Deserialize)]
@@ -15,22 +15,31 @@ impl TokenClaims{
             &EncodingKey::from_secret(config.jwt_key.as_ref())
         ){
             Ok(token) => Ok(token),
-            Err(err) => match err.into_kind(){
-                ErrorKind::ExpiredSignature => return Err(AppError::BadRequest("Token expired")),
-                _ => return Err(AppError::InternalServerError("Error while decoding token".to_string())),
+            Err(err) => {
+                tracing::error!("Generating JWT error: {}",err);
+                return Err(AppError::InternalServerError("".to_string()))
             },
         }
     }
 
 
-    pub fn decode_token(token : &str, config: &Config)-> Result<TokenClaims, Error>{
+    pub fn decode_token(token : &str, config: &Config)-> Result<TokenClaims, AppError>{
         match decode(
             &token, 
             &DecodingKey::from_secret(config.jwt_key.as_ref()),
-            &Validation::new(Algorithm::HS256)
+            &Validation::default()
         ){
             Ok(data) =>return Ok(data.claims),
-            Err(err) => return Err(err),
+            Err(err) => match err.into_kind(){
+                ErrorKind::ExpiredSignature => return Err(AppError::BadRequest("Token expired")),
+                _ => {
+                    tracing::error!("Decode token Error");
+                    return Err(AppError::InternalServerError("Error while decoding token".to_string()))},
+            },
         }
     }
+    // pub fn validate_token(token : &str, config : &Config)-> Result<bool, Error>{
+    //     let validation = Validation::default();
+    //     match decode::<TokenClaims>(token, )
+    // }
 }

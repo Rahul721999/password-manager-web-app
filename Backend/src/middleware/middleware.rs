@@ -3,8 +3,6 @@ use actix_web::{
 };
 use futures::future::Ready;
 use crate::{AppError};
-use jsonwebtoken::Validation;
-
 #[derive(Debug)]
 pub struct MyMiddleware{
     pub token :  String,
@@ -30,7 +28,7 @@ impl FromRequest for MyMiddleware{
         if let Some(token) = req.headers().get("Authorization"){
             auth_token = token.to_str().expect("").to_string();
         }else{
-            return futures::future::err(AppError::InternalServerError("Authorization token not verified".to_string()));
+            return futures::future::err(AppError::BadRequest("Authorization token not verified"));
         };
 
         futures::future::ok(MyMiddleware{token: auth_token})
