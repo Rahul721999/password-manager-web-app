@@ -9,3 +9,6 @@ pub use validator_module::{valid_email, valid_password};
 
 pub mod gen_token;
 pub use gen_token::*;
+
+pub mod pass_strength;
+pub use pass_strength::analyze_pass;

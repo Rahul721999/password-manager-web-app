@@ -1,6 +1,6 @@
 use crate::{
     utils::hash_pass,
-    utils::{AppError, valid_email, valid_password}
+    utils::{AppError, valid_email, valid_password}, analyze_pass
 };
 use actix_web::{HttpResponse, web};
 use serde::Deserialize;
@@ -36,7 +36,8 @@ pub async fn sign_up(
 )
 -> Result<HttpResponse, AppError>
 { 
-//1. form validation..
+// 1 Pre-Req Validations
+    // 1.1 form validation..
     let _res =match new_user.validate(){
         Ok(..) => {},
         Err(err) =>{
@@ -48,12 +49,19 @@ pub async fn sign_up(
                 }
                 errors if errors.contains_key("pass") =>{
                     error!("❌ Password Validation error");
-                    return Err(AppError::AuthError(format!("Must contain at least one upper-case, one lower-case, a number & a special char")))
+                    return Err(AppError::AuthError(format!("Password must contain at least one UPPER-CASE, one lower-case, 1 number & a $pecial char")))
                 }
                 _ => return Err(AppError::BadRequest("Invalid input"))
             }   
         }
     };
+
+    // 1.2 Analyze password..
+    if let Err(err) =  analyze_pass(&new_user.pass){
+        return Err(err)
+    }
+
+    
 //2. first check if the email already present in the DB.
     let data_present = sqlx::query_scalar::<_, bool>("SELECT EXISTS(SELECT 1 FROM user_cred WHERE email = $1)").bind(new_user.email.clone())
     .fetch_one(db.as_ref())
@@ -84,5 +92,5 @@ pub async fn sign_up(
         Err(_) => error!("❌Failed to add User")
     };
 
-    Ok(HttpResponse::Ok().body("User added Successfully"))
+    Ok(HttpResponse::Ok().json(serde_json::json!({"message" : "User added Successfully"})))
 }

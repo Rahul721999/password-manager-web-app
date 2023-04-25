@@ -75,11 +75,11 @@ pub async fn login(
     if !verify_pass(user_cred.password.clone().as_str(), password.as_str()).await {
         return Err(AppError::AuthError("Unauthorize User".to_string()));   
     }
-
+    // NEED TO ADD SECOND STEP VERIFICATION HERE...
     // 4. if credectials matches generate & return JWT
     let claim = TokenClaims{
         email : user_cred.email.clone(),
-        exp : (Utc::now() + Duration::minutes(60)).timestamp() as usize,
+        exp : (Utc::now() + Duration::seconds(config.jwt_exp as i64)).timestamp() as usize,
     };
 
     let token  = match claim.generate(&config){

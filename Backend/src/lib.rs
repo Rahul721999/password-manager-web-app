@@ -14,6 +14,7 @@ pub use utils::{
     error_module::{AppError},
     validator_module::{valid_email, valid_password},
     gen_token::{TokenClaims},
+    pass_strength::{analyze_pass},
 };
 
 pub mod log_config;

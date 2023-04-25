@@ -38,8 +38,4 @@ impl TokenClaims{
             },
         }
     }
-    // pub fn validate_token(token : &str, config : &Config)-> Result<bool, Error>{
-    //     let validation = Validation::default();
-    //     match decode::<TokenClaims>(token, )
-    // }
 }
