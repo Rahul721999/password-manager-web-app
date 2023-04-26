@@ -2,10 +2,20 @@ pub mod config;
 pub use config::{Config, run};
 
 pub mod user_routes;
-pub use user_routes::*;
+pub use user_routes::{
+    health_check,sign_up, login, del_acc,
+};
+
+pub mod feature_route;
+pub use feature_route::{
+    
+};
 
 pub mod models;
-pub use models::user_schema::*;
+pub use models::{
+    user_schema::UserCred,
+    user_data::UserData,
+};
 
 
 pub mod utils;

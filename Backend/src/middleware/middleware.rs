@@ -26,7 +26,7 @@ impl FromRequest for MyMiddleware{
 
         let auth_token: String;
         if let Some(token) = req.headers().get("Authorization"){
-            auth_token = token.to_str().expect("").to_string();
+            auth_token = token.to_str().expect("Failed to get Auth Token as str").to_string();
         }else{
             return futures::future::err(AppError::BadRequest("Authorization token not verified"));
         };

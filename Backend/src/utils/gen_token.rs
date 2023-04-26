@@ -1,9 +1,11 @@
 use serde::{Serialize, Deserialize};
 use jsonwebtoken::{Header, encode, decode, EncodingKey, DecodingKey, errors::{ErrorKind}, Validation};
+use sqlx::types::Uuid;
 use crate::AppError;
 use crate::config::Config;
 #[derive(Debug, Serialize, Deserialize)]
 pub struct TokenClaims{
+    pub id : Uuid,
     pub email : String,
     pub exp : usize,
 }

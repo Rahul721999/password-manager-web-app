@@ -42,12 +42,12 @@ pub async fn login(
             
             match err.field_errors() {
                 errors if errors.contains_key("email")=>{
-                    error!("❌ Email Validation error");
+                    error!("❌ Invalid Email");
                     return Err(AppError::AuthError("Invalid email".to_string()))
                 }
                 errors if errors.contains_key("pass") =>{
-                    error!("❌ Password Validation error");
-                    return Err(AppError::AuthError(format!("Passwod validation error")))
+                    error!("❌ Invalid Password");
+                    return Err(AppError::AuthError(format!("Invalid Password")))
                 }
                 _ => return Err(AppError::BadRequest("Invalid input"))
             }   
@@ -78,6 +78,7 @@ pub async fn login(
     // NEED TO ADD SECOND STEP VERIFICATION HERE...
     // 4. if credectials matches generate & return JWT
     let claim = TokenClaims{
+        id : row.id.clone(),
         email : user_cred.email.clone(),
         exp : (Utc::now() + Duration::seconds(config.jwt_exp as i64)).timestamp() as usize,
     };

@@ -42,7 +42,7 @@ pub async fn start(config: Config) -> std::io::Result<()> {
                     .wrap(Compat::new(TracingLogger::default()))
                     .route("/SignUp", web::post().to(sign_up))
                     .route("/LogIn", web::post().to(login))
-                    .route("/Delete-acc", web::post().to(del_acc)),
+                    .route("/Delete-acc", web::delete().to(del_acc)),
             )
             .wrap(TracingLogger::<DomainSpanBuilder>::new())
             .app_data(web::Data::new(db.clone()))
