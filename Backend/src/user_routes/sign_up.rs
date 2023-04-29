@@ -69,7 +69,7 @@ pub async fn sign_up(
     .map_err(|_| AppError::InternalServerError("EXIST query failed".to_string()))?;
 
     if data_present{
-            info!("🚫Email : {} already present in the db", new_user.email.clone()); 
+            info!("🚫Email : {} already present in the db, Try to login", new_user.email.clone()); 
             return Err(AppError::EmailExists);
         }
         

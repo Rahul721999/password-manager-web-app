@@ -8,7 +8,7 @@ pub use user_routes::{
 
 pub mod feature_route;
 pub use feature_route::{
-    
+    store_details::store,
 };
 
 pub mod models;

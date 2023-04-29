@@ -1,5 +1,5 @@
-pub mod store_detils;
-pub use store_detils::*;
+pub mod store_details;
+pub use store_details::*;
 
 pub mod fetch_details;
 pub use fetch_details::*;

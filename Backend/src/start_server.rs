@@ -11,6 +11,7 @@ use lib::{
     login,
     sign_up::sign_up,
     DomainSpanBuilder, MyMiddleware,
+    feature_route::*,
 };
 use tracing::info;
 use tracing_actix_web::TracingLogger;
@@ -43,6 +44,13 @@ pub async fn start(config: Config) -> std::io::Result<()> {
                     .route("/SignUp", web::post().to(sign_up))
                     .route("/LogIn", web::post().to(login))
                     .route("/Delete-acc", web::delete().to(del_acc)),
+            )
+            .service(
+                web::scope("/User")
+                    .app_data(web::Data::new(db.clone()))
+                    .app_data(configuration.clone())
+                    .wrap(Compat::new(TracingLogger::default()))
+                    .route("/store", web::put().to(store))
             )
             .wrap(TracingLogger::<DomainSpanBuilder>::new())
             .app_data(web::Data::new(db.clone()))
