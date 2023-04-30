@@ -75,7 +75,8 @@ pub async fn del_acc(
             }
         }
         Err(err) => {
-            return Err(AppError::InternalServerError(format!("Error : {}", err)));
+            error!("❌SELECT query failed: {}", err);
+            return Err(AppError::InternalServerError(format!("Failed to search your data while performing delete operation")));
         }
     };
 
@@ -100,7 +101,8 @@ pub async fn del_acc(
                 .json(serde_json::json!({"message" : "Account Deleted Successfully"})));
         }
         Err(err) => {
-            return Err(AppError::InternalServerError(format!("Error : {}", err)));
+            error!("❌DELETE query failed : {}", err);
+            return Err(AppError::InternalServerError(format!("Failed to delete your account")));
         }
     };
 }

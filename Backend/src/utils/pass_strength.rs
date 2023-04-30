@@ -1,4 +1,5 @@
 use passwords::{analyzer, scorer, PasswordGenerator};
+use tracing::{info, error};
 use crate::AppError;
 
 pub fn analyze_pass(password : &str)-> Result<(), AppError>{
@@ -10,10 +11,11 @@ pub fn analyze_pass(password : &str)-> Result<(), AppError>{
                 Ok(p) => p,
                 Err(err) => return Err(err), 
             };
+            info!("Weak password");
             return Err(AppError::AuthError(format!("Weak Password, You can use something like: {}",pass_suggestion)))},
         81..=100=>{return Ok(())},
         _ => {
-            tracing::error!("❌ Password analyze error");
+            error!("❌ Password analyze error");
             Err(AppError::InternalServerError(format!("Password analyze failed")))}
     }
 }
@@ -32,7 +34,7 @@ pub fn gen_pass() -> Result<String, AppError>{
     match pg.generate_one(){
         Ok(pass) => return Ok(pass),
         Err(err) => {
-            tracing::error!("❌ Failed to generate password: {}", err);
+            error!("❌ Failed to generate password: {}", err);
             return Err(AppError::InternalServerError(format!("Failed to generate password")))}
     }
 }

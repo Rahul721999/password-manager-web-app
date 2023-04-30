@@ -1,8 +1,8 @@
 pub mod store_details;
-pub use store_details::*;
+pub use store_details::store;
 
 pub mod fetch_details;
-pub use fetch_details::*;
+pub use fetch_details::fetch;
 
 pub mod delete_details;
 pub use delete_details::*;

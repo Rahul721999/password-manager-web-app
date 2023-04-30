@@ -48,7 +48,10 @@ pub async fn store(
     .bind(cred.website_url.clone())
     .fetch_one(db.as_ref())
     .await
-    .map_err(|err| AppError::InternalServerError(format!("Exists query failed: {}", err)))?;
+    .map_err(|err| {
+        error!("Exists query failed: {}", err);
+        AppError::InternalServerError(format!("Searching db failed"))}
+    )?;
 
     // if (user_id & website_url) present in db
     if data_present {
@@ -61,7 +64,7 @@ pub async fn store(
     // else store the credentials to the DB..
     let hash = match encrypt(&cred.password).await {
         Ok(hash) => hash,
-        Err(err) => {
+        Err(_err) => {
             return Err(AppError::InternalServerError(format!("password encryption error")));
         }
     };

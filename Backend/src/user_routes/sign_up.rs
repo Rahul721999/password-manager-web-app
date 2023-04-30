@@ -74,9 +74,10 @@ pub async fn sign_up(
         }
         
 //3. hash the pass
-    let hash_pass = hash_pass(&new_user.pass)
-        .await
-        .expect("failed to get the hash");
+    let hash_pass = match hash_pass(&new_user.pass).await{
+        Ok(hash) => hash,
+        Err(err) => return Err(err),
+    };
 
 //4. store email and password hash to the db
     match sqlx::query!(

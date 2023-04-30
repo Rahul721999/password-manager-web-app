@@ -4,15 +4,7 @@ use actix_web::{
     middleware::{self, Compat, Logger},
     web, App, HttpServer,
 };
-use lib::{
-    config::{run, Config},
-    del_acc,
-    health_check::greet,
-    login,
-    sign_up::sign_up,
-    DomainSpanBuilder, MyMiddleware,
-    feature_route::*,
-};
+use lib::*;
 use tracing::info;
 use tracing_actix_web::TracingLogger;
 
@@ -51,6 +43,7 @@ pub async fn start(config: Config) -> std::io::Result<()> {
                     .app_data(configuration.clone())
                     .wrap(Compat::new(TracingLogger::default()))
                     .route("/store", web::put().to(store))
+                    .route("/get", web::get().to(fetch))
             )
             .wrap(TracingLogger::<DomainSpanBuilder>::new())
             .app_data(web::Data::new(db.clone()))
