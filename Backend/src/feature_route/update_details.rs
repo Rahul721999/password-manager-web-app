@@ -36,16 +36,6 @@ pub async fn update(
         Err(err) => return Err(err),
     };
 
-    if let Some(pass) = &cred.password{
-        // check the password validity and Strength..
-        if let Err(_err) = valid_password(&pass) {
-            return Err(AppError::AuthError(format!("Password must contain at least one UPPER-CASE, one lower-case, 1 number & a $pecial char")));
-        }
-        if let Err(err) = analyze_pass(&pass) {
-            return Err(err);
-        }
-    }
-
     // Search if the (user_id & website_url) is already present in the DB..
     let mut data_present = sqlx::query_as::<_, UserData>(
         "SELECT *
@@ -72,7 +62,18 @@ pub async fn update(
     if let Some(username) = &cred.username{
         data_present.username = username.to_owned();
     }
+
+    let mut new_pass: String = "Prev-used-pass".to_string();
     if let Some(password) = &cred.password{
+        new_pass = password.clone();
+        // check the password validity and Strength..
+        if let Err(_err) = valid_password(&password) {
+            return Err(AppError::AuthError(format!("Password must contain at least one UPPER-CASE, one lower-case, 1 number & a $pecial char")));
+        }
+        if let Err(err) = analyze_pass(&password) {
+            return Err(err);
+        }
+
         let hash = match encrypt(&password).await {
             Ok(hash) => hash,
             Err(_err) => {
@@ -81,7 +82,6 @@ pub async fn update(
         };
         data_present.password_hash = hash;
     }
-    
     // Update Data to DB..
     match sqlx::query(
         "UPDATE website_credentials 
@@ -101,7 +101,7 @@ pub async fn update(
                 "website_name" : data_present.website_name,
                 "website_url" : data_present.website_url,
                 "username" : data_present.username,
-                "password" : cred.password.to_owned().unwrap(),
+                "password" : new_pass
             });
             return Ok(HttpResponse::Ok().json(json!({"message" : "Data updated successfuly","updated_data" : result})));
         },
