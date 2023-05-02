@@ -1,6 +1,7 @@
 use serde::{Serialize, Deserialize};
 use jsonwebtoken::{Header, encode, decode, EncodingKey, DecodingKey, errors::{ErrorKind}, Validation};
 use sqlx::types::Uuid;
+use tracing::error;
 use crate::AppError;
 use crate::config::Config;
 #[derive(Debug, Serialize, Deserialize)]
@@ -18,7 +19,7 @@ impl TokenClaims{
         ){
             Ok(token) => Ok(token),
             Err(err) => {
-                tracing::error!("Generating JWT error: {}",err);
+                error!("Generating JWT error: {}",err);
                 return Err(AppError::InternalServerError("".to_string()))
             },
         }
@@ -33,7 +34,11 @@ impl TokenClaims{
         ){
             Ok(data) =>return Ok(data.claims),
             Err(err) => match err.into_kind(){
+                ErrorKind::InvalidToken => return Err(AppError::AuthError(format!("Invalid token"))),
                 ErrorKind::ExpiredSignature => return Err(AppError::BadRequest("Token expired")),
+                ErrorKind::ImmatureSignature =>{ 
+                    error!("❗ Check JWT-Secret-key");
+                    return Err(AppError::InternalServerError(format!("Error while decode Auth token")))},
                 _ => {
                     tracing::error!("Decode token Error");
                     return Err(AppError::InternalServerError("Error while decoding token".to_string()))},

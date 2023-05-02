@@ -1,9 +1,9 @@
 use validator::ValidationError;
-use crate::email_regex;
+use crate::EMAIL_REGEX;
 
 pub fn valid_email(email: &str) -> Result<(), ValidationError>{
     
-    if email_regex.is_match(email) {
+    if EMAIL_REGEX.is_match(email) {
         Ok(())
     } else {
         Err(ValidationError::new("Invalid Email"))

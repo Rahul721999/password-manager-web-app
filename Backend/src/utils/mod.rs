@@ -11,7 +11,7 @@ pub mod gen_token;
 pub use gen_token::*;
 
 pub mod pass_strength;
-pub use pass_strength::analyze_pass;
+pub use pass_strength::{analyze_pass, generate_pass};
 
 pub mod encryption_module;
 pub use encryption_module::*;

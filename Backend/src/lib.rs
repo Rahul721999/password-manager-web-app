@@ -11,6 +11,8 @@ pub use feature_route::{
     store_details::store,
     fetch_details::fetch,
     update_details::update,
+    delete_details::delete,
+    gen_pass::generate,
 };
 
 pub mod models;
@@ -26,7 +28,7 @@ pub use utils::{
     error_module::{AppError},
     validator_module::{valid_email, valid_password},
     gen_token::{TokenClaims},
-    pass_strength::{analyze_pass},
+    pass_strength::{analyze_pass, generate_pass},
 };
 
 pub mod log_config;
@@ -39,7 +41,7 @@ pub use middleware::MyMiddleware;
 #[macro_use]
 extern crate lazy_static;
 lazy_static!{
-    static ref email_regex : regex::Regex = match regex::Regex::new(r"^([a-z0-9_+]([a-z0-9_+.]*[a-z0-9_+])?)@([a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,6})"){
+    static ref EMAIL_REGEX : regex::Regex = match regex::Regex::new(r"^([a-z0-9_+]([a-z0-9_+.]*[a-z0-9_+])?)@([a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,6})"){
         Ok(reg) => reg,
         Err(_) =>{
             tracing::error!("failed to set the email regex");

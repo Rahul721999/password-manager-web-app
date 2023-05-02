@@ -12,7 +12,7 @@ pub struct Data {
 }
 
 #[tracing::instrument(
-	name="🚩 Web Data-Store request"
+	name="🚩 User Data-Store request"
 	skip_all
 )]
 pub async fn store(
@@ -50,7 +50,7 @@ pub async fn store(
     .await
     .map_err(|err| {
         error!("Exists query failed: {}", err);
-        AppError::InternalServerError(format!("Searching db failed"))}
+        return AppError::InternalServerError(format!("Searching db failed"))}
     )?;
 
     // if (user_id & website_url) present in db
@@ -80,9 +80,9 @@ pub async fn store(
         cred.username,
         hash
     ).execute(db.as_ref()).await{
-        Ok(_) =>  info!("✅User added successfully"),
+        Ok(_) =>  info!("✅User added successfuly"),
         Err(err) => {error!("❌Failed to add User: {}",err); return Err(AppError::InternalServerError(format!("{}",err)))}
     };
 
-    Ok(HttpResponse::Ok().body("Data added"))
+    Ok(HttpResponse::Ok().body("Data added successfuly"))
 }

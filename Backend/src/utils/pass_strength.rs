@@ -7,7 +7,7 @@ pub fn analyze_pass(password : &str)-> Result<(), AppError>{
     let score = scorer::score(&res) as i64;
     match score{
         0..=80 =>{
-            let pass_suggestion = match gen_pass(){
+            let pass_suggestion = match generate_pass(){
                 Ok(p) => p,
                 Err(err) => return Err(err), 
             };
@@ -20,7 +20,7 @@ pub fn analyze_pass(password : &str)-> Result<(), AppError>{
     }
 }
 
-pub fn gen_pass() -> Result<String, AppError>{
+pub fn generate_pass() -> Result<String, AppError>{
     let pg = PasswordGenerator{
         length: 8,
         numbers: true,

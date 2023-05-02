@@ -1,7 +1,7 @@
 use crate::{AppError, Config, MyMiddleware, TokenClaims, utils::decrypt};
 use actix_web::{web, HttpResponse};
 use serde::{Serialize,Deserialize};
-use sqlx::{PgPool};
+use sqlx::{PgPool, types::Uuid};
 use tracing::{error, info};
 
 #[derive(Debug, Deserialize)]
@@ -11,11 +11,12 @@ pub struct Data {
 }
 #[derive(Debug, Serialize)]
 pub struct FetchedData{
+    pub id : Uuid,
     pub username : String,
     pub password_hash : String,
 }
 #[tracing::instrument(
-	name="🚩 Web Data-Update request"
+	name="🚩 User Data-Update request"
 	skip_all
 )]
 pub async fn fetch(
@@ -34,11 +35,12 @@ pub async fn fetch(
 // 2. fetch the data from the db..
     let mut row = 
     match sqlx::query_as!(FetchedData,
-        "SELECT username, password_hash 
+        "SELECT id, username, password_hash 
         FROM website_credentials 
-        WHERE user_id = $1 AND website_url = $2", 
+        WHERE user_id = $1 AND website_url = $2 AND website_name = $3", 
         user_id, 
-        cred.website_url.clone()
+        cred.website_url.clone(),
+        cred.website_name.clone()
     )
     .fetch_optional(db.as_ref())
     .await{
