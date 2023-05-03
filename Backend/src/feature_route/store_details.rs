@@ -1,4 +1,4 @@
-use crate::{analyze_pass, valid_password, AppError, Config, MyMiddleware, TokenClaims, utils::encrypt};
+use crate::{analyze_pass, valid_password, AppError, MyMiddleware, utils::encrypt};
 use actix_web::{web, HttpResponse};
 use serde::Deserialize;
 use sqlx::{types::Uuid, PgPool};
@@ -19,14 +19,9 @@ pub async fn store(
     cred: web::Json<Data>,
     db: web::Data<PgPool>,
     mid: MyMiddleware,
-    config: web::Data<Config>,
 ) -> Result<HttpResponse, AppError> {
     // Extract Data from the token..
-    let token = mid.token;
-    let (user_id, _user_email) = match TokenClaims::decode_token(&token, &config) {
-        Ok(claims) => (claims.id, claims.email),
-        Err(err) => return Err(err),
-    };
+    let user_id = mid.user_id;
     // check the password validity and Strength..
     if let Err(_err) = valid_password(&cred.password) {
         return Err(AppError::AuthError(format!("Password must contain at least one UPPER-CASE, one lower-case, 1 number & a $pecial char")));

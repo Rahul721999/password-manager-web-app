@@ -1,4 +1,4 @@
-use crate::{analyze_pass, valid_password, AppError, Config, MyMiddleware, TokenClaims, utils::encrypt, UserData};
+use crate::{analyze_pass, valid_password, AppError, MyMiddleware, utils::encrypt, UserData};
 use actix_web::{web, HttpResponse};
 use serde::Deserialize;
 use sqlx::{types::Uuid, PgPool};
@@ -21,7 +21,6 @@ pub async fn update(
     cred: web::Json<Data>,
     db: web::Data<PgPool>,
     mid: MyMiddleware,
-    config: web::Data<Config>
 )-> Result<HttpResponse, AppError>{
     // if the ROW_id has not given...
     if let None = cred.id{
@@ -30,11 +29,7 @@ pub async fn update(
     let row_id = cred.id.unwrap();
 
     // Extract Data from the token..
-    let token = mid.token;
-    let (user_id, _user_email) = match TokenClaims::decode_token(&token, &config) {
-        Ok(claims) => (claims.id, claims.email),
-        Err(err) => return Err(err),
-    };
+    let user_id = mid.user_id;
 
     // Search if the (user_id & website_url) is already present in the DB..
     let mut data_present = sqlx::query_as::<_, UserData>(

@@ -1,4 +1,4 @@
-use crate::{AppError, Config, MyMiddleware, TokenClaims, utils::decrypt};
+use crate::{AppError, MyMiddleware, utils::decrypt};
 use actix_web::{web, HttpResponse};
 use serde::{Serialize,Deserialize};
 use sqlx::{PgPool, types::Uuid};
@@ -22,16 +22,12 @@ pub struct FetchedData{
 pub async fn fetch(
     cred: web::Json<Data>,
     db: web::Data<PgPool>,
-    mid: MyMiddleware,
-    config: web::Data<Config>,
+    mid: MyMiddleware
 )-> Result<HttpResponse, AppError>{
 
 // 1. Extract Data from the token..
-    let token = mid.token;
-    let (user_id, _user_email) = match TokenClaims::decode_token(&token, &config) {
-        Ok(claims) => (claims.id, claims.email),
-        Err(err) => return Err(err),
-    };
+    let user_id = mid.user_id;
+
 // 2. fetch the data from the db..
     let mut row = 
     match sqlx::query_as!(FetchedData,

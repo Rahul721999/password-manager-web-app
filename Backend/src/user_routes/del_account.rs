@@ -1,6 +1,6 @@
 use crate::{
     utils::{valid_email, valid_password, verify_pass},
-    AppError, Config, UserCred, MyMiddleware, TokenClaims,
+    AppError, UserCred, MyMiddleware,
     
 };
 use actix_web::{web, HttpResponse};
@@ -19,7 +19,7 @@ pub struct LoginCred {
 
 #[tracing::instrument(
     name = "🚩 Web Del_Acc Req"
-    skip (db, user_cred, config)
+    skip (db, user_cred)
     fields(
         email = %user_cred.email.clone()
     )
@@ -28,7 +28,6 @@ pub async fn del_acc(
     user_cred: web::Json<LoginCred>,
     db: web::Data<PgPool>,
     mid : MyMiddleware,
-    config: web::Data<Config>,
 ) -> Result<HttpResponse, AppError> {
     //1. form validation..
     let _res = match user_cred.validate() {
@@ -45,21 +44,14 @@ pub async fn del_acc(
             _ => return Err(AppError::BadRequest("Invalid input")),
         },
     };
-    // 2. verify the token...
-    let token = mid.token;
-    let claims = match TokenClaims::decode_token(&token, &config){
-        Ok(claims) => claims,
-        Err(err) => {
-            error!("❌ Token couldn't be decoded: {}", err);
-            return Err(AppError::InternalServerError("Token expired, try Login again".to_string()));
-        }
-    };
+    // Extract Data from the token..
+    let (user_id, user_email) = ( mid.user_id, mid.user_email);
     // 3. Verify the credentiala..
     // 3.1 get the hashed_pass..
     let row = match sqlx::query_as!(
         UserCred,
-        "SELECT * FROM user_cred WHERE email = $1",
-        claims.email
+        "SELECT * FROM user_cred WHERE id = $1",
+        user_id
     )
     .fetch_optional(db.as_ref())
     .await
@@ -69,8 +61,8 @@ pub async fn del_acc(
                 r
             } else {
                 return Err(AppError::InternalServerError(format!(
-                    "Email: {} not present, Try SignIn first",
-                    claims.email
+                    "Email: {} not found, Try SignIn first",
+                    user_email
                 )));
             }
         }
@@ -87,7 +79,17 @@ pub async fn del_acc(
     }
 
 
-    // 4. Comeplete the Delete req..
+    // 4. Delete user Data before comeplete the Delete req..
+    match sqlx::query!("DELETE FROM website_credentials WHERE user_id = $1", user_id)
+        .execute(db.as_ref())
+        .await{
+            Ok(..) => {info!("Deleting the user_data first")}
+            Err(err) => {
+                error!("❌ Error while deleting User_data");
+                return Err(AppError::InternalServerError(format!("Failed to delete user_data, Error: {}",err)));}
+        };
+
+    // 5. Complete Delete req..
     match sqlx::query!(
         "DELETE FROM user_cred WHERE email = $1",
         user_cred.email.clone()
