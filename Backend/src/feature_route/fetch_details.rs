@@ -13,7 +13,7 @@ pub struct Data {
 pub struct FetchedData{
     pub id : Uuid,
     pub username : String,
-    pub password_hash : String,
+    pub password_hash : Vec<u8>,
 }
 #[tracing::instrument(
 	name="🚩 User Data-Update request"
@@ -29,7 +29,7 @@ pub async fn fetch(
     let user_id = mid.user_id;
 
 // 2. fetch the data from the db..
-    let mut row = 
+    let row = 
     match sqlx::query_as!(FetchedData,
         "SELECT id, username, password_hash 
         FROM website_credentials 
@@ -53,7 +53,7 @@ pub async fn fetch(
         },
     };
 
-    row.password_hash = match decrypt(&row.password_hash).await{
+    let dec_password = match decrypt(row.password_hash).await{
         Ok(pass) => pass,
         Err(err) => {
             error!("❌ failed to decrypt the password: {}",err);
@@ -61,5 +61,9 @@ pub async fn fetch(
         }
     };
 
-    Ok(HttpResponse::Ok().json(row))
+    Ok(HttpResponse::Ok().json(serde_json::json!({
+        "row_id" : row.id,
+        "website_url" : row.username,
+        "password" : dec_password,
+    })))
 }

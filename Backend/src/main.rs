@@ -1,4 +1,7 @@
 #![allow(unused)]
+#[macro_use]
+extern crate lazy_static;
+
 mod config;
 mod start_server;
 use lib::config::Config;

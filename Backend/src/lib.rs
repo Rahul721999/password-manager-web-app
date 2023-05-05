@@ -10,6 +10,7 @@ pub mod feature_route;
 pub use feature_route::{
     store_details::store,
     fetch_details::fetch,
+    fetch_all::fetch_all,
     update_details::update,
     delete_details::delete,
     gen_pass::generate,
@@ -38,9 +39,7 @@ pub mod middleware;
 pub use middleware::MyMiddleware;
 
 
-#[macro_use]
-extern crate lazy_static;
-lazy_static!{
+lazy_static::lazy_static!{
     static ref EMAIL_REGEX : regex::Regex = match regex::Regex::new(r"^([a-z0-9_+]([a-z0-9_+.]*[a-z0-9_+])?)@([a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,6})"){
         Ok(reg) => reg,
         Err(_) =>{

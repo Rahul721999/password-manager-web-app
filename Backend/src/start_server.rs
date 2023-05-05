@@ -44,6 +44,7 @@ pub async fn start(config: Config) -> std::io::Result<()> {
                     .wrap(Compat::new(TracingLogger::default()))
                     .route("/store", web::put().to(store))
                     .route("/get", web::get().to(fetch))
+                    .route("/get_all", web::get().to(fetch_all))
                     .route("/update", web::patch().to(update))
                     .route("/delete", web::delete().to(delete))
                     .route("/generate_password", web::get().to(generate))

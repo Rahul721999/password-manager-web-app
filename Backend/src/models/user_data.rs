@@ -7,7 +7,7 @@ pub struct UserData{
     pub website_name : String,
     pub website_url : String,
     pub username : String,
-    pub password_hash  : String, 
+    pub password_hash  : Vec<u8>, 
     pub created_at : DateTime<Utc>,
     pub updated_at : DateTime<Utc>,
 }
@@ -22,7 +22,7 @@ impl UserData{
         website_name : String, 
         website_url : String,
         username : String,
-        password_hash : String,
+        password_hash : Vec<u8>,
     ) -> Self{
         UserData { 
             id: Uuid::new_v4().into(),
