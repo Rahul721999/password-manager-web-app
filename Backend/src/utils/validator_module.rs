@@ -21,12 +21,12 @@ pub fn valid_password(password : &str)-> Result<(), ValidationError>{
         has_whitespace |= c.is_whitespace();
         has_lower |= c.is_lowercase();
         has_upper |= c.is_uppercase();
-        has_digit |= c.is_digit(10);
+        has_digit |= c.is_ascii_digit();
         has_special |= c.is_ascii_punctuation();
     }
     if !has_whitespace && has_upper && has_lower && has_digit && has_special && password.len() >= 8 {
         Ok(())
     } else {
-        return Err(ValidationError::new("Password is not strong enough"));
+        Err(ValidationError::new("Password is not strong enough"))
     }
 }

@@ -39,12 +39,12 @@ pub async fn encrypt(value : &str) -> Result<Vec<u8>, AppError>{
     let mut rand = rand::thread_rng();
 
     match RsaPublicKey::encrypt(&PUB_KEY, &mut rand,Pkcs1v15Encrypt, value.as_bytes()){
-        Ok(r) => return Ok(r),
+        Ok(r) => Ok(r),
         Err(err) =>{ 
             error!("❌Failed to encrypt pass: {}", err);
-            return Err(AppError::InternalServerError(format!("failed to encrypt password")))
+            Err(AppError::InternalServerError("failed to encrypt password".to_string()))
         },
-    };
+    }
 }
 
 pub async fn decrypt(value : Vec<u8>) -> Result<String,AppError>{
@@ -56,13 +56,13 @@ pub async fn decrypt(value : Vec<u8>) -> Result<String,AppError>{
                 Ok(r) => r,
                 Err(err) => {
                     error!("❌ Failed to convert decrypted password to String: {}", err);
-                    return Err(AppError::InternalServerError(format!("decrypt password error")))}
+                    return Err(AppError::InternalServerError("decrypt password error".to_string()))}
             };
-            return Ok(res)
+            Ok(res)
         },
         Err(err) => {
             error!("❌ Failed to decrypt the stored_password: {}", err);
-            return Err(AppError::InternalServerError(format!("password couldn't be decrypted")))
+            Err(AppError::InternalServerError("password couldn't be decrypted".to_string()))
         }
     }
 }

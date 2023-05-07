@@ -36,7 +36,7 @@ pub async fn login(
     config : web::Data<Config>
 ) -> Result<HttpResponse, AppError>{
     //1. form validation..
-    let _res =match user_cred.validate(){
+    match user_cred.validate(){
         Ok(..) => {},
         Err(err) =>{
             
@@ -47,7 +47,7 @@ pub async fn login(
                 }
                 errors if errors.contains_key("pass") =>{
                     error!("❌ Invalid Password");
-                    return Err(AppError::AuthError(format!("Invalid Password")))
+                    return Err(AppError::AuthError("Invalid Password".to_string()))
                 }
                 _ => return Err(AppError::BadRequest("Invalid input"))
             }   
@@ -78,7 +78,7 @@ pub async fn login(
     // NEED TO ADD SECOND STEP VERIFICATION HERE...
     // 4. if credectials matches generate & return JWT
     let claim = TokenClaims{
-        id : row.id.clone(),
+        id : row.id,
         email : user_cred.email.clone(),
         exp : (Utc::now() + Duration::seconds(config.jwt_exp as i64)).timestamp() as usize,
     };

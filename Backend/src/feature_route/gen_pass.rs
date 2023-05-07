@@ -13,5 +13,5 @@ pub async fn generate(
         Ok(p) => p,
         Err(err) => return Err(err), 
     };
-    return Ok(HttpResponse::Ok().json(serde_json::json!({"password_suggestion" : pass_suggestion})));
+    Ok(HttpResponse::Ok().json(serde_json::json!({"password_suggestion" : pass_suggestion})))
 }

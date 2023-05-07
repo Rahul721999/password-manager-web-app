@@ -20,7 +20,7 @@ impl TokenClaims{
             Ok(token) => Ok(token),
             Err(err) => {
                 error!("Generating JWT error: {}",err);
-                return Err(AppError::InternalServerError("".to_string()))
+                Err(AppError::InternalServerError("".to_string()))
             },
         }
     }
@@ -28,20 +28,20 @@ impl TokenClaims{
 
     pub fn decode_token(token : &str, config: &Config)-> Result<TokenClaims, AppError>{
         match decode(
-            &token, 
+            token, 
             &DecodingKey::from_secret(config.jwt_key.as_ref()),
             &Validation::default()
         ){
-            Ok(data) =>return Ok(data.claims),
+            Ok(data) => Ok(data.claims),
             Err(err) => match err.into_kind(){
-                ErrorKind::InvalidToken => return Err(AppError::AuthError(format!("Invalid token"))),
-                ErrorKind::ExpiredSignature => return Err(AppError::BadRequest("Token expired")),
+                ErrorKind::InvalidToken => Err(AppError::AuthError("Invalid token".to_string())),
+                ErrorKind::ExpiredSignature => Err(AppError::BadRequest("Token expired")),
                 ErrorKind::ImmatureSignature =>{ 
                     error!("❗ Check JWT-Secret-key");
-                    return Err(AppError::InternalServerError(format!("Error while decode Auth token")))},
+                    Err(AppError::InternalServerError("Error while decode Auth token".to_string()))},
                 _ => {
                     tracing::error!("Decode token Error");
-                    return Err(AppError::InternalServerError("Error while decoding token".to_string()))},
+                    Err(AppError::InternalServerError("Error while decoding token".to_string()))},
             },
         }
     }

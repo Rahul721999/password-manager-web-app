@@ -33,14 +33,14 @@ impl FromRequest for MyMiddleware {
         if let Some(token) = req.headers().get("Authorization") {
             auth_token = token.to_str().expect("Failed to get Auth Token as str");
             // 1. Extract Data from the token..
-            match TokenClaims::decode_token(auth_token, &config) {
+            match TokenClaims::decode_token(auth_token, config) {
                 Ok(claims) => {
-                    return future::ok(MyMiddleware {user_id : claims.id, user_email : claims.email })
+                    future::ok(MyMiddleware {user_id : claims.id, user_email : claims.email })
                 },
-                Err(err) => return future::err(err),
-            };
+                Err(err) => future::err(err),
+            }
         } else {
-            return futures::future::err(AppError::BadRequest("Authorization token not verified"));
-        };
+            futures::future::err(AppError::BadRequest("Authorization token not verified"))
+        }
     }
 }

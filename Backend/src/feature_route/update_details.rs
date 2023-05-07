@@ -23,7 +23,7 @@ pub async fn update(
     mid: MyMiddleware,
 )-> Result<HttpResponse, AppError>{
     // if the ROW_id has not given...
-    if let None = cred.id{
+    if cred.id.is_none(){
         return Err(AppError::BadRequest("id not provied"));
     } 
     let row_id = cred.id.unwrap();
@@ -44,7 +44,7 @@ pub async fn update(
     .await
     .map_err(|err| {
         error!("❌ SELECT query failed: {}", err);
-        return AppError::InternalServerError(format!("Searching db failed"))}
+        AppError::InternalServerError("Searching db failed".to_string())}
     )?;
 
     // update the data in existing_data if the None value is given
@@ -62,17 +62,15 @@ pub async fn update(
     if let Some(password) = &cred.password{
         new_pass = password.clone();
         // check the password validity and Strength..
-        if let Err(_err) = valid_password(&password) {
-            return Err(AppError::AuthError(format!("Password must contain at least one UPPER-CASE, one lower-case, 1 number & a $pecial char")));
+        if let Err(_err) = valid_password(password) {
+            return Err(AppError::AuthError("Password must contain at least one UPPER-CASE, one lower-case, 1 number & a $pecial char".to_string()));
         }
-        if let Err(err) = analyze_pass(&password) {
-            return Err(err);
-        }
+        analyze_pass(password)?;
 
-        let hash = match encrypt(&password).await {
+        let hash = match encrypt(password).await {
             Ok(hash) => hash,
             Err(_err) => {
-                return Err(AppError::InternalServerError(format!("password encryption error")));
+                return Err(AppError::InternalServerError("password encryption error".to_string()));
             }
         };
         data_present.password_hash = hash;
@@ -87,8 +85,8 @@ pub async fn update(
     .bind(&data_present.website_url)
     .bind(&data_present.username)
     .bind(&data_present.password_hash)
-    .bind(&row_id)
-    .bind(&user_id)
+    .bind(row_id)
+    .bind(user_id)
     .execute(db.as_ref()).await{
         Ok(_) =>  {
             info!("✅User-Data updated successfuly");
@@ -98,11 +96,11 @@ pub async fn update(
                 "username" : data_present.username,
                 "password" : new_pass
             });
-            return Ok(HttpResponse::Ok().json(json!({"message" : "Data updated successfuly","updated_data" : result})));
+            Ok(HttpResponse::Ok().json(json!({"message" : "Data updated successfuly","updated_data" : result})))
         },
         Err(err) => {
             error!("❌Failed to add User: {}",err); 
-            return Err(AppError::InternalServerError(format!("{}",err)))
+            Err(AppError::InternalServerError(format!("{}",err)))
         }
-    };
+    }
 }

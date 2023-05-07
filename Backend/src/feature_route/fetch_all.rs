@@ -44,7 +44,7 @@ pub async fn fetch_all(
         Ok(all_row) => all_row,
         Err(err) =>  {
             error!("❌ failed to find the data in the db: {}", err);
-            return Err(AppError::InternalServerError(format!("Sorry, no data could be found in the Database")));
+            return Err(AppError::InternalServerError("Sorry, no data could be found in the Database".to_string()));
         },
     };
 
@@ -53,12 +53,12 @@ pub async fn fetch_all(
         let password_hash = fetched_data.password_hash.clone();
 
         // create a closure
-        let fut = async move {
+        async move {
             let dec_password = match decrypt(password_hash).await {
                 Ok(pass) => pass,
                 Err(err) => {
                     error!("❌ failed to decrypt the password: {}",err);
-                    return Err(AppError::InternalServerError(format!("Data couldn't be fetched from the Database")));
+                    return Err(AppError::InternalServerError("Data couldn't be fetched from the Database".to_string()));
                 }
             };
             Ok(Data {
@@ -66,9 +66,8 @@ pub async fn fetch_all(
                 username: fetched_data.username,
                 password: dec_password,
             })
-        };
+        }
         // call the closure here
-        fut
     })
     .collect::<FuturesUnordered<_>>()
     .filter_map(|result| async move { result.ok() })
@@ -76,6 +75,6 @@ pub async fn fetch_all(
     .await;
 
 
-   return Ok(HttpResponse::Ok().json(serde_json::json!({"data" : result_vec})))
+   Ok(HttpResponse::Ok().json(serde_json::json!({"data" : result_vec})))
     
 }

@@ -38,7 +38,7 @@ pub async fn sign_up(
 { 
 // 1 Pre-Req Validations
     // 1.1 form validation..
-    let _res =match new_user.validate(){
+    match new_user.validate(){
         Ok(..) => {},
         Err(err) =>{
             
@@ -49,7 +49,7 @@ pub async fn sign_up(
                 }
                 errors if errors.contains_key("pass") =>{
                     error!("❌ Password Validation error");
-                    return Err(AppError::AuthError(format!("Password must contain at least one UPPER-CASE, one lower-case, 1 number & a $pecial char")))
+                    return Err(AppError::AuthError("Password must contain at least one UPPER-CASE, one lower-case, 1 number & a $pecial char".to_string()))
                 }
                 _ => return Err(AppError::BadRequest("Invalid input"))
             }   
@@ -57,9 +57,7 @@ pub async fn sign_up(
     };
 
     // 1.2 Analyze password..
-    if let Err(err) =  analyze_pass(&new_user.pass){
-        return Err(err)
-    }
+    analyze_pass(&new_user.pass)?;
 
     
 //2. first check if the email already present in the DB.

@@ -1,5 +1,3 @@
-#![allow(unused)]
-#[macro_use]
 extern crate lazy_static;
 
 mod config;
@@ -7,7 +5,7 @@ mod start_server;
 use lib::config::Config;
 use lib::{get_subscriber, init_subscriber};
 use start_server::start;
-use tracing_subscriber::{EnvFilter, FmtSubscriber};
+
 #[actix_rt::main]
 async fn main() -> std::io::Result<()>{
     // set logger

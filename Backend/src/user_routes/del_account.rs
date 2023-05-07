@@ -1,6 +1,6 @@
 use crate::{
     utils::{valid_email, valid_password, verify_pass},
-    AppError, UserCred, MyMiddleware,
+    AppError, MyMiddleware, UserCred,
     
 };
 use actix_web::{web, HttpResponse};
@@ -30,7 +30,7 @@ pub async fn del_acc(
     mid : MyMiddleware,
 ) -> Result<HttpResponse, AppError> {
     //1. form validation..
-    let _res = match user_cred.validate() {
+    match user_cred.validate() {
         Ok(..) => {}
         Err(err) => match err.field_errors() {
             errors if errors.contains_key("email") => {
@@ -39,7 +39,7 @@ pub async fn del_acc(
             }
             errors if errors.contains_key("pass") => {
                 error!("❌Password Validation error");
-                return Err(AppError::AuthError(format!("Passwod validation error")));
+                return Err(AppError::AuthError("Passwod validation error".to_string()));
             }
             _ => return Err(AppError::BadRequest("Invalid input")),
         },
@@ -68,7 +68,7 @@ pub async fn del_acc(
         }
         Err(err) => {
             error!("❌SELECT query failed: {}", err);
-            return Err(AppError::InternalServerError(format!("Failed to search your data while performing delete operation")));
+            return Err(AppError::InternalServerError("Failed to search your data while performing delete operation".to_string()));
         }
     };
 
@@ -99,12 +99,12 @@ pub async fn del_acc(
     {
         Ok(_res) => {
             info!("✅ Account deleted Successfully");
-            return Ok(HttpResponse::Ok()
-                .json(serde_json::json!({"message" : "Account Deleted Successfully"})));
+            Ok(HttpResponse::Ok()
+                .json(serde_json::json!({"message" : "Account Deleted Successfully"})))
         }
         Err(err) => {
             error!("❌DELETE query failed : {}", err);
-            return Err(AppError::InternalServerError(format!("Failed to delete your account")));
+            Err(AppError::InternalServerError("Failed to delete your account".to_string()))
         }
-    };
+    }
 }

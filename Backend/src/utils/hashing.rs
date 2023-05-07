@@ -8,14 +8,10 @@ pub async fn hash_pass(password: &str) -> Result<String, AppError> {
     let salt = rng.gen::<[u8; 16]>();
     if let Ok(hashed) = hash_with_salt(password,  DEFAULT_COST, salt){
         return Ok(hashed.to_string());
-    } return Err(AppError::InternalServerError(format!("Password couldn't be hashed")));
+    } Err(AppError::InternalServerError("Password couldn't be hashed".to_string()))
 }
 
 
 pub async fn verify_pass(password: &str, hashed_pass: &str) -> bool{
-    match verify(password, hashed_pass) {
-        Ok(true) => true,
-        _ => false,
-    }
-
+    matches!(verify(password, hashed_pass), Ok(true))
 }

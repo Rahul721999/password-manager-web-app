@@ -25,7 +25,7 @@ impl UserData{
         password_hash : Vec<u8>,
     ) -> Self{
         UserData { 
-            id: Uuid::new_v4().into(),
+            id: Uuid::new_v4(),
             user_id, 
             website_name, 
             website_url, 

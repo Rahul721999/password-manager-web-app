@@ -1,0 +1,196 @@
+{
+  "db": "PostgreSQL",
+  "1a100f4048c622b68faecf2bdbe0217be47daa14b105e0536e998707ca93c6c0": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "email",
+          "ordinal": 1,
+          "type_info": "Text"
+        },
+        {
+          "name": "password_hash",
+          "ordinal": 2,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "first_name",
+          "ordinal": 3,
+          "type_info": "Text"
+        },
+        {
+          "name": "last_name",
+          "ordinal": 4,
+          "type_info": "Text"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      }
+    },
+    "query": "SELECT * FROM user_cred WHERE email = $1"
+  },
+  "1a37e9f0994b40229214f1596789ab94bffc3581de86ad49b7eb0080b77436c6": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Uuid"
+        ]
+      }
+    },
+    "query": "DELETE FROM website_credentials WHERE user_id = $1"
+  },
+  "3c99b7dbe766365aa8ef943c4ea3e0cc9b0942b49a7c29bd0edb18d5eab0a90b": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Uuid",
+          "Uuid",
+          "Text",
+          "Text",
+          "Text",
+          "Bytea"
+        ]
+      }
+    },
+    "query": "INSERT INTO website_credentials (id, user_id, website_name, website_url, username, password_hash, created_at, updated_at) \n        VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW())"
+  },
+  "699fc4f15f74b1be1bfdc8ff5ac84d2b493ea020e13fb8f51c35610b1208d8d4": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "email",
+          "ordinal": 1,
+          "type_info": "Text"
+        },
+        {
+          "name": "password_hash",
+          "ordinal": 2,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "first_name",
+          "ordinal": 3,
+          "type_info": "Text"
+        },
+        {
+          "name": "last_name",
+          "ordinal": 4,
+          "type_info": "Text"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Uuid"
+        ]
+      }
+    },
+    "query": "SELECT * FROM user_cred WHERE id = $1"
+  },
+  "a57fac9cd66308820456a1f59467490292c1bd09c9cd2dc54cff547632f0f8e4": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      }
+    },
+    "query": "DELETE FROM user_cred WHERE email = $1"
+  },
+  "a874dac7a1bd89a2365a7f5c2cdb3f26207d5e67a1bbd26de2da6fbcfd37640c": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Uuid",
+          "Text",
+          "Text"
+        ]
+      }
+    },
+    "query": "DELETE \n        FROM website_credentials \n        WHERE user_id = $1 AND website_url = $2 AND website_name = $3"
+  },
+  "aa5922bc71fe8beb74493f1443e74f4e468097741da1c56e75a40c0525459a82": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Uuid",
+          "Text",
+          "Varchar",
+          "Text",
+          "Text"
+        ]
+      }
+    },
+    "query": "INSERT INTO user_cred (id, email, password_hash, first_name, last_name) VALUES ($1, $2, $3, $4, $5)"
+  },
+  "bb94c72f8dbcb472d90f31c83e90c401c620894bdb763959bb66cdb7a0cce445": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "username",
+          "ordinal": 1,
+          "type_info": "Text"
+        },
+        {
+          "name": "password_hash",
+          "ordinal": 2,
+          "type_info": "Bytea"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Uuid",
+          "Text",
+          "Text"
+        ]
+      }
+    },
+    "query": "SELECT id, username, password_hash \n        FROM website_credentials \n        WHERE user_id = $1 AND website_url = $2 AND website_name = $3"
+  }
+}

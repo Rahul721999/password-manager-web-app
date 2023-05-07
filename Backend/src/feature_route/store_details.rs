@@ -24,11 +24,9 @@ pub async fn store(
     let user_id = mid.user_id;
     // check the password validity and Strength..
     if let Err(_err) = valid_password(&cred.password) {
-        return Err(AppError::AuthError(format!("Password must contain at least one UPPER-CASE, one lower-case, 1 number & a $pecial char")));
+        return Err(AppError::AuthError("Password must contain at least one UPPER-CASE, one lower-case, 1 number & a $pecial char".to_string()));
     }
-    if let Err(err) = analyze_pass(&cred.password) {
-        return Err(err);
-    }
+    analyze_pass(&cred.password)?;
 
     // Search if the (user_id & website_url) is already present in the DB..
     let data_present = sqlx::query_scalar::<_, bool>(
@@ -45,7 +43,7 @@ pub async fn store(
     .await
     .map_err(|err| {
         error!("Exists query failed: {}", err);
-        return AppError::InternalServerError(format!("Searching db failed"))}
+        AppError::InternalServerError("Searching db failed".to_string())}
     )?;
 
     // if (user_id & website_url) present in db
@@ -60,7 +58,7 @@ pub async fn store(
     let hash = match encrypt(&cred.password).await {
         Ok(hash) => hash,
         Err(_err) => {
-            return Err(AppError::InternalServerError(format!("password encryption error")));
+            return Err(AppError::InternalServerError("password encryption error".to_string()));
         }
     };
 

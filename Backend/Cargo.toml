@@ -1,5 +1,5 @@
 [package]
-name = "password-manager-webapp"
+name = "password_manager_webapp"
 version = "0.1.0"
 edition = "2021"
 
@@ -7,6 +7,10 @@ edition = "2021"
 [lib]
 name="lib"
 path="src/lib.rs"
+
+[[bin]]
+name="password_manager_webapp"
+path="src/main.rs"
 
 [dependencies]
 #backend framework
@@ -37,9 +41,6 @@ regex = "1.7.3"
 serde = { version = "1.0.158", features = ["derive"] }
 serde_json = "1.0.95"
 
-# postgreSQL query tool
-sqlx = { version = "0.6.3", features = ["runtime-async-std-native-tls", "postgres", "chrono", "uuid"] }
-
 # error handling
 anyhow = "1.0.70"
 thiserror = "1.0.40"
@@ -62,3 +63,18 @@ futures = "0.3.28"
 actix-cors = "0.6.4"
 passwords = "3.1.13"
 rsa = { version = "0.9.1", features = ["pem"] }
+
+
+# postgreSQL query tool
+[dependencies.sqlx]
+version = "0.6.3"
+default-features = false
+features = [
+    "runtime-async-std-native-tls", 
+    "postgres", 
+    "chrono", 
+    "uuid", 
+    "offline", 
+    "migrate", 
+    "macros"
+]

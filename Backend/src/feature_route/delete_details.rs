@@ -35,23 +35,23 @@ pub async fn delete(
         Ok(res) => { match res.rows_affected(){
             0 => {
                 info!("✅ Details coudn't be found in the DB");
-                return Ok(HttpResponse::Ok()
-                .json(serde_json::json!({"message" : "Data couldn't be found in the DB"})));
+                Ok(HttpResponse::Ok()
+                .json(serde_json::json!({"message" : "Data couldn't be found in the DB"})))
             }
             1 => {
                 info!("✅ Details deleted Successfully");
-                return Ok(HttpResponse::Ok()
-                .json(serde_json::json!({"message" : "Credentials Deleted Successfully"})));
+                Ok(HttpResponse::Ok()
+                .json(serde_json::json!({"message" : "Credentials Deleted Successfully"})))
             }
             _ =>{
                 error!("❌Multiple row has been Deleted❌");
-                return Err(AppError::InternalServerError(format!("Multiple Data row has been deleted")));
+                Err(AppError::InternalServerError("Multiple Data row has been deleted".to_string()))
             }
         }
         }
         Err(err) => {
             error!("❌DELETE query failed : {}", err);
-            return Err(AppError::InternalServerError(format!("Failed to delete your credentials")));
+            Err(AppError::InternalServerError("Failed to delete your credentials".to_string()))
         }
-    };
+    }
 }

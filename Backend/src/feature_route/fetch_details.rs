@@ -49,7 +49,7 @@ pub async fn fetch(
         },
         Err(err) =>  {
             error!("❌ failed to find the data in the db: {}", err);
-            return Err(AppError::InternalServerError(format!("Sorry, data couldn't be found in the Database")));
+            return Err(AppError::InternalServerError("Sorry, data couldn't be found in the Database".to_string()));
         },
     };
 
@@ -57,7 +57,7 @@ pub async fn fetch(
         Ok(pass) => pass,
         Err(err) => {
             error!("❌ failed to decrypt the password: {}",err);
-            return Err(AppError::InternalServerError(format!("Data couldn't be fetched from the Database")));
+            return Err(AppError::InternalServerError("Data couldn't be fetched from the Database".to_string()));
         }
     };
 

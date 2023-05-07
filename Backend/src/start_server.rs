@@ -1,7 +1,7 @@
 use actix_cors::Cors;
 use actix_web::{
     http::header,
-    middleware::{self, Compat, Logger},
+    middleware::{Compat},
     web, App, HttpServer,
 };
 use lib::*;
@@ -11,7 +11,7 @@ use tracing_actix_web::TracingLogger;
 pub async fn start(config: Config) -> std::io::Result<()> {
     //get the db
     let configuration = web::Data::new(config.clone());
-    let db = run(&config.db_url).await;
+    let db = run(&config.db_url);
 
     //start the app
     info!("🚀 Starting server at {}:{}", config.host, config.port);

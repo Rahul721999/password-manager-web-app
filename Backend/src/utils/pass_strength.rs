@@ -12,11 +12,11 @@ pub fn analyze_pass(password : &str)-> Result<(), AppError>{
                 Err(err) => return Err(err), 
             };
             info!("Weak password");
-            return Err(AppError::AuthError(format!("Weak Password, You can use something like: {}",pass_suggestion)))},
-        81..=100=>{return Ok(())},
+            Err(AppError::AuthError(format!("Weak Password, You can use something like: {}",pass_suggestion)))},
+        81..=100=>{Ok(())},
         _ => {
             error!("❌ Password analyze error");
-            Err(AppError::InternalServerError(format!("Password analyze failed")))}
+            Err(AppError::InternalServerError("Password analyze failed".to_string()))}
     }
 }
 
@@ -32,9 +32,9 @@ pub fn generate_pass() -> Result<String, AppError>{
         strict: true,
     };
     match pg.generate_one(){
-        Ok(pass) => return Ok(pass),
+        Ok(pass) => Ok(pass),
         Err(err) => {
             error!("❌ Failed to generate password: {}", err);
-            return Err(AppError::InternalServerError(format!("Failed to generate password")))}
+            Err(AppError::InternalServerError("Failed to generate password".to_string()))}
     }
 }
