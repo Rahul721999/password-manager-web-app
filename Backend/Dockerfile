@@ -26,7 +26,7 @@ RUN rm ./target/release/deps/password_manager_webapp*
 RUN cargo build --release
 
 # final base
-FROM rust:1.69-slim-buster
+FROM rust:1-slim-bullseye
 
 # copy the build artifact form the build stage
 COPY --from=build password_manager_webapp/target/release/password_manager_webapp ./

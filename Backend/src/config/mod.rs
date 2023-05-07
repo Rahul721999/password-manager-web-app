@@ -49,8 +49,8 @@ pub fn run(database_url: &str) -> PgPool {
             debug!("✅ Connecting to PSQL db Successfully");
             pool
         }
-        Err(_err) => {
-            panic!("🔥 failed to connect PSQL_DB");
+        Err(err) => {
+            panic!("🔥 failed to connect PSQL_DB: {}",err);
         }
     }
 }
