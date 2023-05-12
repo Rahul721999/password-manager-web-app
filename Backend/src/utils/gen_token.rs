@@ -1,9 +1,10 @@
+use secrecy::ExposeSecret;
 use serde::{Serialize, Deserialize};
 use jsonwebtoken::{Header, encode, decode, EncodingKey, DecodingKey, errors::{ErrorKind}, Validation};
 use sqlx::types::Uuid;
 use tracing::error;
 use crate::AppError;
-use crate::config::Config;
+use crate::configs::Settings;
 #[derive(Debug, Serialize, Deserialize)]
 pub struct TokenClaims{
     pub id : Uuid,
@@ -11,11 +12,11 @@ pub struct TokenClaims{
     pub exp : usize,
 }
 impl TokenClaims{
-    pub fn generate(&self, config: &Config) -> Result<String,AppError>{
+    pub fn generate(&self, config: &Settings) -> Result<String,AppError>{
         match encode(
             &Header::default(),
             &self,
-            &EncodingKey::from_secret(config.jwt_key.as_ref())
+            &EncodingKey::from_secret(config.application.jwt_key.expose_secret().as_ref())
         ){
             Ok(token) => Ok(token),
             Err(err) => {
@@ -26,10 +27,10 @@ impl TokenClaims{
     }
 
 
-    pub fn decode_token(token : &str, config: &Config)-> Result<TokenClaims, AppError>{
+    pub fn decode_token(token : &str, config: &Settings)-> Result<TokenClaims, AppError>{
         match decode(
             token, 
-            &DecodingKey::from_secret(config.jwt_key.as_ref()),
+            &DecodingKey::from_secret(config.application.jwt_key.expose_secret().as_ref()),
             &Validation::default()
         ){
             Ok(data) => Ok(data.claims),
@@ -37,7 +38,7 @@ impl TokenClaims{
                 ErrorKind::InvalidToken => Err(AppError::AuthError("Invalid token".to_string())),
                 ErrorKind::ExpiredSignature => Err(AppError::BadRequest("Token expired")),
                 ErrorKind::ImmatureSignature =>{ 
-                    error!("❗ Check JWT-Secret-key");
+                    error!("❗Check JWT-Secret-key");
                     Err(AppError::InternalServerError("Error while decode Auth token".to_string()))},
                 _ => {
                     tracing::error!("Decode token Error");

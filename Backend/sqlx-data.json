@@ -1,5 +1,20 @@
 {
   "db": "PostgreSQL",
+  "18530f5e4a7c4c0776e0fa052977251c5e64c8fd4cf407a61a2d25a1326e12ec": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Uuid",
+          "Uuid",
+          "Text",
+          "Text"
+        ]
+      }
+    },
+    "query": "DELETE \n        FROM website_credentials \n        WHERE id = $1 AND user_id = $2 AND website_url = $3 AND website_name = $4"
+  },
   "1a100f4048c622b68faecf2bdbe0217be47daa14b105e0536e998707ca93c6c0": {
     "describe": {
       "columns": [
@@ -128,20 +143,6 @@
       }
     },
     "query": "DELETE FROM user_cred WHERE email = $1"
-  },
-  "a874dac7a1bd89a2365a7f5c2cdb3f26207d5e67a1bbd26de2da6fbcfd37640c": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Left": [
-          "Uuid",
-          "Text",
-          "Text"
-        ]
-      }
-    },
-    "query": "DELETE \n        FROM website_credentials \n        WHERE user_id = $1 AND website_url = $2 AND website_name = $3"
   },
   "aa5922bc71fe8beb74493f1443e74f4e468097741da1c56e75a40c0525459a82": {
     "describe": {

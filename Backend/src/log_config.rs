@@ -5,17 +5,17 @@ use tracing_bunyan_formatter::{BunyanFormattingLayer, JsonStorageLayer};
 use tracing_log::LogTracer;
 use tracing_subscriber::{layer::SubscriberExt, EnvFilter, Registry, fmt::MakeWriter};
 
+use crate::ApplicationSettings;
+
 pub fn get_subscriber<Sink>(
+    app : &ApplicationSettings,
     sink : Sink
 )-> impl Subscriber + Send + Sync
     where Sink: for<'a> MakeWriter<'a> + Sync + Send + 'static,
 {
     dotenv().ok();
-    let name = std::env::var("PROJECT_NAME").expect("Failed to load project name");
-    // let log_lvl = std::env::var("RUST_LOG").expect("Failed to set RUST_LOG");
-    let env_filter = EnvFilter::try_from_default_env()
-        .unwrap_or_else(|_| EnvFilter::new(
-            "INFO"));
+    let name = app.name.clone();
+    let env_filter = EnvFilter::new(app.log_level.clone());
     let formatter_layer = BunyanFormattingLayer::new(name, 
         //output the formatted spans to stdout
         sink

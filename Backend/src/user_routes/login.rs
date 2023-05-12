@@ -3,7 +3,7 @@ use crate::{AppError,
     utils::{verify_pass, valid_email, valid_password},
     TokenClaims,
     UserCred,
-    Config
+    Settings
 };
 use sqlx::{PgPool};
 use tracing::{error};
@@ -33,7 +33,7 @@ pub struct LoginCred{
 pub async fn login(
     user_cred : web::Json<LoginCred>,
     db : web::Data<PgPool>,
-    config : web::Data<Config>
+    config : web::Data<Settings>
 ) -> Result<HttpResponse, AppError>{
     //1. form validation..
     match user_cred.validate(){
@@ -80,7 +80,7 @@ pub async fn login(
     let claim = TokenClaims{
         id : row.id,
         email : user_cred.email.clone(),
-        exp : (Utc::now() + Duration::seconds(config.jwt_exp as i64)).timestamp() as usize,
+        exp : (Utc::now() + Duration::seconds(config.application.jwt_exp as i64)).timestamp() as usize,
     };
 
     let token  = match claim.generate(&config){

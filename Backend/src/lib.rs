@@ -1,5 +1,6 @@
-pub mod config;
-pub use config::{Config, run};
+pub mod configs;
+pub use configs::{Settings, DatabaseSettings, ApplicationSettings};
+
 
 pub mod user_routes;
 pub use user_routes::{

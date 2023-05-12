@@ -9,12 +9,14 @@ use tracing::{error};
 #[derive(Debug, Serialize)]
 pub struct Data{
     pub id  : Uuid,
+    pub website_url : String,
     pub username : String,
     pub password : String,
 }
 #[derive(Debug, Serialize, Deserialize, FromRow)]
 pub struct FetchedData{
     pub id : Uuid,
+    pub website_url : String,
     pub username : String,
     pub password_hash : Vec<u8>,
 }
@@ -34,7 +36,7 @@ pub async fn fetch_all(
 
     let rows = 
     match sqlx::query_as::<_,FetchedData>(
-        "SELECT id, username, password_hash 
+        "SELECT id, website_url, username, password_hash 
         FROM website_credentials 
         WHERE user_id = $1"
     )
@@ -63,6 +65,7 @@ pub async fn fetch_all(
             };
             Ok(Data {
                 id: fetched_data.id,
+                website_url : fetched_data.website_url,
                 username: fetched_data.username,
                 password: dec_password,
             })
