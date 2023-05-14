@@ -44,7 +44,7 @@ pub async fn update(
     .await
     .map_err(|err| {
         error!("❌ SELECT query failed: {}", err);
-        AppError::InternalServerError("Searching db failed".to_string())}
+        AppError::InternalServerError("Data not found in our DB".to_string())}
     )?;
 
     // update the data in existing_data if the None value is given

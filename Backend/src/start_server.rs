@@ -8,17 +8,19 @@ use lib::*;
 use tracing::info;
 use tracing_actix_web::TracingLogger;
 
-pub async fn start(config: Config) -> std::io::Result<()> {
+pub async fn start(config: Settings) -> std::io::Result<()> {
     //get the db
-    let configuration = web::Data::new(config.clone());
-    let db = run(&config.db_url);
+    let app = config.application.clone();
+    let db = config.run();
+    let configuration = web::Data::new(config);
 
     //start the app
-    info!("🚀 Starting server at {}:{}", config.host, config.port);
+    info!("🚀 Starting server at {}:{}", app.host, app.port);
+    info!("⚠️ Log-Level : {}", app.log_level.clone());
     HttpServer::new(move || {
         // set cors
         let cors = Cors::default()
-            .allowed_origin("https://localhost:7000")
+            .allowed_origin("frontend_url")
             .allowed_methods(vec!["GET", "POST"])
             .allowed_headers(vec![header::AUTHORIZATION, header::ACCEPT])
             .allowed_header(header::CONTENT_TYPE)
@@ -53,7 +55,7 @@ pub async fn start(config: Config) -> std::io::Result<()> {
             .app_data(web::Data::new(db.clone()))
             .app_data(configuration.clone())
     })
-    .bind(format!("{}:{}", config.host, config.port))?
+    .bind(format!("{}:{}", app.host, app.port))?
     .run()
     .await?;
     Ok(())

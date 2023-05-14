@@ -1,10 +1,11 @@
 use crate::{AppError, MyMiddleware};
 use actix_web::{web, HttpResponse};
 use serde::{Deserialize};
-use sqlx::{PgPool};
+use sqlx::{PgPool, types::Uuid};
 use tracing::{error, info};
 #[derive(Debug, Deserialize)]
 pub struct Data {
+    pub id : Uuid,
     pub website_name: String,
     pub website_url: String,
 }
@@ -25,7 +26,8 @@ pub async fn delete(
     match sqlx::query!(
         "DELETE 
         FROM website_credentials 
-        WHERE user_id = $1 AND website_url = $2 AND website_name = $3", 
+        WHERE id = $1 AND user_id = $2 AND website_url = $3 AND website_name = $4",
+        cred.id, 
         user_id, 
         cred.website_url.clone(),
         cred.website_name.clone()
@@ -43,7 +45,7 @@ pub async fn delete(
                 Ok(HttpResponse::Ok()
                 .json(serde_json::json!({"message" : "Credentials Deleted Successfully"})))
             }
-            _ =>{
+            _ =>{ // this is not possible though..cause the (id) is unique
                 error!("❌Multiple row has been Deleted❌");
                 Err(AppError::InternalServerError("Multiple Data row has been deleted".to_string()))
             }

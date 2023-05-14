@@ -1,4 +1,4 @@
-use crate::{AppError, Config, TokenClaims};
+use crate::{AppError, Settings, TokenClaims};
 use actix_web::{web, FromRequest, HttpRequest};
 use futures::future::{self, Ready};
 use sqlx::types::Uuid;
@@ -26,7 +26,7 @@ impl FromRequest for MyMiddleware {
             ));
         }
         let config = req
-            .app_data::<web::Data<Config>>()
+            .app_data::<web::Data<Settings>>()
             .expect("Failed to get the config");
 
         let auth_token: &str;
