@@ -2,11 +2,10 @@
 Password Manager Web App is a simple web application built using Rust that allows users to manage their passwords securely.
 
 # Features
-- reate, edit, and delete passwords.
-- nerate strong passwords.
-- ore passwords securely using encryption.
-- ew password history.
-- er authentication and authorization.
+- create, edit, and delete passwords.
+- generate strong passwords.
+- store passwords securely using encryption.
+- user authentication and authorization.
 # Get started
 To get started, clone this repository and run the following command to start the server:
 ```bash
