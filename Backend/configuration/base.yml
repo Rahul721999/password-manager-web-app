@@ -1,6 +1,6 @@
 application:
   name: "Password-Manager"
-  port: 6966
+  port: 6428
   host: "localhost"
   jwt_key: "UnJtb25kYWwxMkAK"
   jwt_exp: 3600
@@ -10,4 +10,5 @@ database:
   port: 5432
   username: "postgres"
   password: "Rrmondal12"
-  name: "password_manager"
+  name: "PasswordManager"
+  
