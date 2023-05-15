@@ -2,4 +2,4 @@ application:
   host: 127.0.0.1
   log_level: "INFO"
 database:
-  require_ssl: false;
+  require_ssl: false
