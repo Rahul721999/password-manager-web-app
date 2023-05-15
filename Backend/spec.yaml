@@ -17,23 +17,23 @@ services:
       - path: /
     envs:
       - key: APP_DATABASE_USERNAME
-      scope: RUN_TIME
-      value: ${PasswordManager.USERNAME}
+        scope: RUN_TIME
+        value: ${password-manager.USERNAME}
       - key: APP_DATABASE_PASSWORD
-      scope: RUN_TIME
-      value: ${PasswordManager.PASSWORD}
+        scope: RUN_TIME
+        value: ${password-manager.PASSWORD}
       - key: APP_DATABASE_HOST
-      scope: RUN_TIME
-      value: ${PasswordManager.HOSTNAME}
+        scope: RUN_TIME
+        value: ${password-manager.HOSTNAME}
       - key: APP_DATABASE_PORT
-      scope: RUN_TIME
-      value: ${PasswordManager.PORT}
+        scope: RUN_TIME
+        value: ${password-manager.PORT}
       - key: APP_DATABASE_DATABASE_NAME
-      scope: RUN_TIME
-      value: ${PasswordManager.DATABASE}
+        scope: RUN_TIME
+        value: ${password-manager.DATABASE}
 databases:
   - engine: PG
-    name: PasswordManager
+    name: password-manager
     num_nodes: 1
     size: db-s-dev-database
     version: "12"
