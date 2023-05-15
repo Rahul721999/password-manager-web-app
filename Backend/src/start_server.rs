@@ -29,7 +29,7 @@ pub async fn start(config: Settings) -> std::io::Result<()> {
         App::new()
             .wrap(cors)
             .wrap(TracingLogger::default())
-            .route("/health-check", web::get().to(greet))
+            .route("/", web::get().to(greet))
             .service(
                 web::scope("/Auth")
                     .app_data(web::Data::new(db.clone()))

@@ -10,4 +10,4 @@ database:
   port: 5432
   username: "postgres"
   password: "Rrmondal12"
-  name: "password_manager"
+  name: "PasswordManager"
