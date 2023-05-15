@@ -3,25 +3,49 @@ use anyhow::Context;
 use dotenv::dotenv;
 use secrecy::{ExposeSecret, Secret};
 use serde::{Deserialize, Serialize};
-use sqlx::postgres::{PgPool, PgPoolOptions};
+use sqlx::{postgres::{PgPool, PgPoolOptions, PgConnectOptions, PgSslMode}, ConnectOptions};
 use std::env;
 use tracing::debug;
 use crate::AppError;
 use config::{Config, File};
+use serde_aux::field_attributes::deserialize_number_from_string;
 
 #[derive(Debug, Deserialize,Clone)]
 pub struct DatabaseSettings {
     pub host: String,
+    #[serde(deserialize_with = "deserialize_number_from_string")]
     pub port: u16,
     pub username: String,
     pub password: Secret<String>,
     pub name: String,
+    pub require_ssl : bool,
 }
-
+///implementing database settings
+impl DatabaseSettings{
+    pub fn without_db(&self)->PgConnectOptions{
+        let ssl_req = if self.require_ssl{
+            PgSslMode::Require
+        }else{
+            PgSslMode::Prefer
+        };
+        PgConnectOptions::new()
+            .host(&self.host)
+            .username(&self.username)
+            .password(&self.password.expose_secret())
+            .port(self.port)
+            .ssl_mode(ssl_req)
+    }
+    pub fn with_db(&self)-> PgConnectOptions{
+        let mut options = self.without_db().database(&self.name);
+        options.log_statements(tracing::log::LevelFilter::Trace);
+        options
+    }
+}
 #[derive(Debug, Deserialize, Clone)]
 pub struct ApplicationSettings {
     pub name: String,
     pub host: String,
+    #[serde(deserialize_with = "deserialize_number_from_string")]
     pub port: u16,
     pub jwt_key: Secret<String>,
     pub jwt_exp: u16,
@@ -33,7 +57,6 @@ pub struct Settings {
     pub database: DatabaseSettings,
     pub application: ApplicationSettings,
 }
-
 impl Settings {
     pub fn get_config() -> Result<Settings, AppError> {
         let base_path = std::env::current_dir().expect("Failed to get the curr dir");
@@ -45,10 +68,11 @@ impl Settings {
             .try_into()
             .expect("Failed to parse App Environment");
         // let environment = Environment::Production;
-        let settging_config = match config
-            .add_source(File::from(config_dir.join(environment.as_str())))
-            .build()
-        {
+        let config = config
+            .add_source(File::from(config_dir.join(environment.as_str())));
+
+        let set_con = match config.add_source(config::Environment::with_prefix("app").separator("__"))
+        .build(){
             Ok(config) => config,   
             Err(err) => {
                 tracing::error!("❌Failed to create configuration: {}", err);
@@ -57,7 +81,7 @@ impl Settings {
                 ));
             }
         };
-        let settings = settging_config
+        let settings = set_con
             .try_deserialize::<Settings>()
             .expect("Failed to parse config to Settings Struct");
         Ok(settings)
@@ -74,18 +98,19 @@ impl Settings {
             db.port,
             db.name
         );
-        match PgPoolOptions::new()
+        // println!("Database name: {}",database_url);
+        PgPoolOptions::new()
             .acquire_timeout(std::time::Duration::from_secs(2))
-            .connect_lazy(&database_url)
-        {
-            Ok(pool) => {
-                debug!("✅ Connecting to PSQL db Successfully");
-                pool
-            }
-            Err(err) => {
-                panic!("🔥 failed to connect PSQL_DB: {}", err);
-            }
-        }
+            .connect_lazy_with(self.database.with_db())
+        // {
+        //     Ok(pool) => {
+        //         debug!("✅ Connecting to PSQL db Successfully");
+        //         pool
+        //     }
+        //     Err(err) => {
+        //         panic!("🔥 failed to connect PSQL_DB: {}", err);
+        //     }
+        // }
     }
 }
 

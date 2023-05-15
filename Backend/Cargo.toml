@@ -65,6 +65,7 @@ futures = "0.3.28"
 actix-cors = "0.6.4"
 passwords = "3.1.13"
 rsa = { version = "0.9.1", features = ["pem"] }
+serde-aux = "4.2.0"
 
 
 
