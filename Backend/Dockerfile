@@ -40,6 +40,7 @@ RUN apt-get update -y \
 COPY --from=builder /password_manager/target/release/password_manager_webapp ./
 
 COPY configuration configuration
+COPY sqlx-data.json .
 # Set App_Env to PRODUCTION
 ENV APP_ENVIRONMENT production
 # run the binary

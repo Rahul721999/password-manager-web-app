@@ -10,25 +10,25 @@ services:
       repo: Rahul721999/password-manager-web-app
     health_check:
       http_path: /
-    http_port: 6966
+    http_port: 6428
     instance_count: 1
     instance_size_slug: basic-xxs
     routes:
       - path: /
     envs:
-      - key: APP_DATABASE_USERNAME
+      - key: APP_DATABASE__USERNAME
         scope: RUN_TIME
         value: ${password-manager.USERNAME}
-      - key: APP_DATABASE_PASSWORD
+      - key: APP_DATABASE__PASSWORD
         scope: RUN_TIME
         value: ${password-manager.PASSWORD}
-      - key: APP_DATABASE_HOST
+      - key: APP_DATABASE__HOST
         scope: RUN_TIME
         value: ${password-manager.HOSTNAME}
-      - key: APP_DATABASE_PORT
+      - key: APP_DATABASE__PORT
         scope: RUN_TIME
         value: ${password-manager.PORT}
-      - key: APP_DATABASE_DATABASE_NAME
+      - key: APP_DATABASE__DATABASE_NAME
         scope: RUN_TIME
         value: ${password-manager.DATABASE}
 databases:
