@@ -3,7 +3,7 @@ use anyhow::Context;
 use dotenv::dotenv;
 use secrecy::{ExposeSecret, Secret};
 use serde::{Deserialize, Serialize};
-use sqlx::{postgres::{PgPool, PgPoolOptions, PgConnectOptions, PgSslMode}, ConnectOptions};
+use sqlx::{postgres::{PgPool, PgPoolOptions, PgConnectOptions, PgSslMode}, ConnectOptions, Executor};
 use std::env;
 use tracing::debug;
 use crate::AppError;
@@ -67,7 +67,7 @@ impl Settings {
             .unwrap_or_else(|_| "local".into())
             .try_into()
             .expect("Failed to parse App Environment");
-        // let environment = Environment::Production;
+        let environment = Environment::Production;
         let config = config
             .add_source(File::from(config_dir.join(environment.as_str())));
 
@@ -142,3 +142,4 @@ impl TryFrom<String> for Environment {
         }
     }
 }
+    
