@@ -102,15 +102,7 @@ impl Settings {
         PgPoolOptions::new()
             .acquire_timeout(std::time::Duration::from_secs(2))
             .connect_lazy_with(self.database.with_db())
-        // {
-        //     Ok(pool) => {
-        //         debug!("✅ Connecting to PSQL db Successfully");
-        //         pool
-        //     }
-        //     Err(err) => {
-        //         panic!("🔥 failed to connect PSQL_DB: {}", err);
-        //     }
-        // }
+        
     }
 }
 

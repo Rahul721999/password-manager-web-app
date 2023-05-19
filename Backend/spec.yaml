@@ -10,7 +10,11 @@ services:
       repo: Rahul721999/password-manager-web-app
     health_check:
       http_path: /
+<<<<<<< HEAD
     http_port: 6966
+=======
+    http_port: 6428
+>>>>>>> dcb371bcb2bd48ecde822daaab87c993333495a0
     instance_count: 1
     instance_size_slug: basic-xxs
     routes:
