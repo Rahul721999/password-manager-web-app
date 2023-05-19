@@ -3,7 +3,7 @@ use anyhow::Context;
 use dotenv::dotenv;
 use secrecy::{ExposeSecret, Secret};
 use serde::{Deserialize, Serialize};
-use sqlx::{postgres::{PgPool, PgPoolOptions, PgConnectOptions, PgSslMode}, ConnectOptions, Executor};
+use sqlx::{postgres::{PgPool, PgPoolOptions, PgConnectOptions, PgSslMode}, ConnectOptions};
 use std::env;
 use tracing::debug;
 use crate::AppError;
@@ -67,7 +67,7 @@ impl Settings {
             .unwrap_or_else(|_| "local".into())
             .try_into()
             .expect("Failed to parse App Environment");
-        let environment = Environment::Production;
+        // let environment = Environment::Production;
         let config = config
             .add_source(File::from(config_dir.join(environment.as_str())));
 
@@ -102,15 +102,7 @@ impl Settings {
         PgPoolOptions::new()
             .acquire_timeout(std::time::Duration::from_secs(2))
             .connect_lazy_with(self.database.with_db())
-        // {
-        //     Ok(pool) => {
-        //         debug!("✅ Connecting to PSQL db Successfully");
-        //         pool
-        //     }
-        //     Err(err) => {
-        //         panic!("🔥 failed to connect PSQL_DB: {}", err);
-        //     }
-        // }
+        
     }
 }
 
@@ -142,4 +134,3 @@ impl TryFrom<String> for Environment {
         }
     }
 }
-    

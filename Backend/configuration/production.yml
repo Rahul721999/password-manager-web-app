@@ -2,9 +2,4 @@ application:
   host: 0.0.0.0
   log_level: "ERROR"
 database:
-  host: "db-postgresql-nyc1-94335-do-user-14077412-0.b.db.ondigitalocean.com"
-  port: 25060
-  username: "doadmin"
-  password: "AVNS_XupucWe4BRKHy7WQWA0"
-  name: "defaultdb"
   require_ssl: true
