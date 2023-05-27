@@ -1,11 +1,6 @@
-#![allow(unused)]
-use anyhow::Context;
-use dotenv::dotenv;
 use secrecy::{ExposeSecret, Secret};
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize,};
 use sqlx::{postgres::{PgPool, PgPoolOptions, PgConnectOptions, PgSslMode}, ConnectOptions};
-use std::env;
-use tracing::debug;
 use crate::AppError;
 use config::{Config, File};
 use serde_aux::field_attributes::deserialize_number_from_string;
@@ -31,7 +26,7 @@ impl DatabaseSettings{
         PgConnectOptions::new()
             .host(&self.host)
             .username(&self.username)
-            .password(&self.password.expose_secret())
+            .password(self.password.expose_secret())
             .port(self.port)
             .ssl_mode(ssl_req)
     }
@@ -52,8 +47,14 @@ pub struct ApplicationSettings {
     pub log_level: String
 }
 
+#[derive(Debug, Deserialize, Clone)]
+pub struct FrontendSettings {
+    pub url : String,
+}
+
 #[derive(Debug, Deserialize)]
 pub struct Settings {
+    pub frontend : FrontendSettings,
     pub database: DatabaseSettings,
     pub application: ApplicationSettings,
 }
@@ -98,7 +99,7 @@ impl Settings {
             db.port,
             db.name
         );
-        // println!("Database name: {}",database_url);
+        tracing::info!("🚀 Database url: {}",database_url);
         PgPoolOptions::new()
             .acquire_timeout(std::time::Duration::from_secs(2))
             .connect_lazy_with(self.database.with_db())

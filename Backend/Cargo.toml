@@ -26,8 +26,6 @@ bson = { version = "2.4.0", features = ["uuid-1"] }
 #datetime crate
 chrono = "0.4.24"
 
-#load env
-dotenv = "0.15.0"
 #load yml file
 config = "0.13.3"
 

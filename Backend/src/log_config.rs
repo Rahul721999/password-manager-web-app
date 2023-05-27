@@ -1,4 +1,3 @@
-use dotenv::dotenv;
 use tracing::{Subscriber, subscriber::{set_global_default}};
 use tracing_actix_web::{RootSpanBuilder, DefaultRootSpanBuilder};
 use tracing_bunyan_formatter::{BunyanFormattingLayer, JsonStorageLayer};
@@ -13,7 +12,7 @@ pub fn get_subscriber<Sink>(
 )-> impl Subscriber + Send + Sync
     where Sink: for<'a> MakeWriter<'a> + Sync + Send + 'static,
 {
-    dotenv().ok();
+
     let name = app.name.clone();
     let env_filter = EnvFilter::new(app.log_level.clone());
     let formatter_layer = BunyanFormattingLayer::new(name, 
