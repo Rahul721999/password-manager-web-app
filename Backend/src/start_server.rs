@@ -13,6 +13,7 @@ pub async fn start(config: Settings) -> std::io::Result<()> {
     let app = config.application.clone();
     let db = config.run();
     let frontend_url = config.frontend.url.clone();
+    // let frontend_url = "localhost:6428";
     let configuration = web::Data::new(config);
     //start the app
     info!("🚀 Starting server at {}:{}", app.host, app.port);
@@ -23,8 +24,10 @@ pub async fn start(config: Settings) -> std::io::Result<()> {
         let cors = Cors::default()
             .allowed_origin(&frontend_url)
             .allowed_methods(vec!["GET", "POST","DELETE", "PATCH","PUT"])
-            .allowed_headers(vec![header::AUTHORIZATION, header::ACCEPT])
-            .allowed_header(header::CONTENT_TYPE)
+            .allowed_headers(vec![
+                header::AUTHORIZATION, 
+                header::ACCEPT,
+                header::CONTENT_TYPE])
             .max_age(3600);
 
         App::new()

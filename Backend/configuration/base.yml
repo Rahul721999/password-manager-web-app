@@ -1,11 +1,11 @@
 frontend:
-  url : "localhost:3000"
+  url : "http://localhost:3000"
 application:
   name: "Password-Manager"
   port: 6428
   host: "localhost"
   jwt_key: "UnJtb25kYWwxMkAK"
-  jwt_exp: 3600
+  jwt_exp: 900
   log_level: "INFO"
 database:
   host: "localhost"

@@ -6,8 +6,7 @@ use tracing::{error, info};
 #[derive(Debug, Deserialize)]
 pub struct Data {
     pub id : Uuid,
-    pub website_name: String,
-    pub website_url: String,
+
 }
 
 #[tracing::instrument(
@@ -26,11 +25,9 @@ pub async fn delete(
     match sqlx::query!(
         "DELETE 
         FROM website_credentials 
-        WHERE id = $1 AND user_id = $2 AND website_url = $3 AND website_name = $4",
+        WHERE id = $1 AND user_id = $2",
         cred.id, 
-        user_id, 
-        cred.website_url.clone(),
-        cred.website_name.clone()
+        user_id,
     )
     .execute(db.as_ref())
     .await{

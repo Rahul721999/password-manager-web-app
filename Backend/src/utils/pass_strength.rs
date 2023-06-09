@@ -22,13 +22,13 @@ pub fn analyze_pass(password : &str)-> Result<(), AppError>{
 
 pub fn generate_pass() -> Result<String, AppError>{
     let pg = PasswordGenerator{
-        length: 8,
+        length: 10,
         numbers: true,
         lowercase_letters: true,
         uppercase_letters: true,
         symbols: true,
         spaces: false,
-        exclude_similar_characters: false,
+        exclude_similar_characters: true,
         strict: true,
     };
     match pg.generate_one(){
