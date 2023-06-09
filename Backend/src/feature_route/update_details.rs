@@ -23,6 +23,11 @@ pub async fn update(
     mid: MyMiddleware,
 )-> Result<HttpResponse, AppError>{
     // if the ROW_id has not given...
+    if let Some(id) = cred.id{
+        if id.to_string().len() == 0{
+            return Err(AppError::BadRequest("Invalid ID"));
+        }
+    }
     if cred.id.is_none(){
         return Err(AppError::BadRequest("id not provied"));
     } 
@@ -62,8 +67,11 @@ pub async fn update(
     if let Some(password) = &cred.password{
         new_pass = password.clone();
         // check the password validity and Strength..
+        if password.len() < 8{
+            return Err(AppError::BadRequest("You should choose password of length more than 8 character"));
+        }
         if let Err(_err) = valid_password(password) {
-            return Err(AppError::AuthError("Password must contain at least one UPPER-CASE, one lower-case, 1 number & a $pecial char".to_string()));
+            return Err(AppError::BadRequest("Password must contain at least one UPPER-CASE, one lower-case, 1 number & a $pecial char"));
         }
         analyze_pass(password)?;
 

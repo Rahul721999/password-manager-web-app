@@ -1,8 +1,9 @@
 use crate::{analyze_pass, valid_password, AppError, MyMiddleware, utils::encrypt};
-use actix_web::{web, HttpResponse};
+use actix_web::{web, HttpResponse, App};
 use serde::Deserialize;
 use sqlx::{types::Uuid, PgPool};
 use tracing::{error, info};
+use serde_json::json;
 #[derive(Debug, Deserialize)]
 pub struct Data {
     pub website_name: String,
@@ -22,9 +23,23 @@ pub async fn store(
 ) -> Result<HttpResponse, AppError> {
     // Extract Data from the token..
     let user_id = mid.user_id;
+
+    // form validation
+    if cred.website_url.is_empty(){
+        return Err(AppError::BadRequest("Invalid Website Url"));
+    }
+    if cred.website_name.is_empty(){
+        return Err(AppError::BadRequest("Invalid Website Name"));
+    }
     // check the password validity and Strength..
     if let Err(_err) = valid_password(&cred.password) {
-        return Err(AppError::AuthError("Password must contain at least one UPPER-CASE, one lower-case, 1 number & a $pecial char".to_string()));
+        if cred.password.is_empty(){
+            return Err(AppError::BadRequest("Password cannot be empty"));
+        }
+        if cred.password.len() < 8{
+            return Err(AppError::BadRequest("You should choose password of length more than 8 character"));
+        }
+        return Err(AppError::BadRequest("Password must contain at least one UPPER-CASE, one lower-case, 1 number & a $pecial char"));
     }
     analyze_pass(&cred.password)?;
 
@@ -51,7 +66,8 @@ pub async fn store(
         // get the pass & compare with the given pass..
         // if the (website_url & the pass) combination is the same..
         // return
-            return Ok(HttpResponse::Ok().body("Data already present"));
+            // return Ok(HttpResponse::Ok().json(json!({"message" : "Data already present" })));
+            return Err(AppError::Conflict("Data already present".to_string()));
         // else try updating the password for the given website_url.
     }
     // else store the credentials to the DB..
@@ -77,5 +93,5 @@ pub async fn store(
         Err(err) => {error!("❌Failed to add User: {}",err); return Err(AppError::InternalServerError(format!("{}",err)))}
     };
 
-    Ok(HttpResponse::Ok().body("Data added successfuly"))
+    Ok(HttpResponse::Ok().json(json!({"message" : "Data Added successfuly" })))
 }
