@@ -2,7 +2,7 @@ frontend:
   url : "http://localhost:3000"
 application:
   name: "Password-Manager"
-  port: 6428
+  port: 7000
   host: "localhost"
   jwt_key: "UnJtb25kYWwxMkAK"
   jwt_exp: 900

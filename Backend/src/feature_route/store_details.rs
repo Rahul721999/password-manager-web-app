@@ -1,5 +1,5 @@
 use crate::{analyze_pass, valid_password, AppError, MyMiddleware, utils::encrypt};
-use actix_web::{web, HttpResponse, App};
+use actix_web::{web, HttpResponse};
 use serde::Deserialize;
 use sqlx::{types::Uuid, PgPool};
 use tracing::{error, info};
