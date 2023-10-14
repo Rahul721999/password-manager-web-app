@@ -1,20 +1,5 @@
 {
   "db": "PostgreSQL",
-  "18530f5e4a7c4c0776e0fa052977251c5e64c8fd4cf407a61a2d25a1326e12ec": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Left": [
-          "Uuid",
-          "Uuid",
-          "Text",
-          "Text"
-        ]
-      }
-    },
-    "query": "DELETE \n        FROM website_credentials \n        WHERE id = $1 AND user_id = $2 AND website_url = $3 AND website_name = $4"
-  },
   "1a100f4048c622b68faecf2bdbe0217be47daa14b105e0536e998707ca93c6c0": {
     "describe": {
       "columns": [
@@ -193,5 +178,18 @@
       }
     },
     "query": "SELECT id, username, password_hash \n        FROM website_credentials \n        WHERE user_id = $1 AND website_url = $2 AND website_name = $3"
+  },
+  "ea4fa69bd5d21adda0d3fe99fb5c2a959afc4eeb0209f94a70dc4c84ebd21817": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Uuid",
+          "Uuid"
+        ]
+      }
+    },
+    "query": "DELETE \n        FROM website_credentials \n        WHERE id = $1 AND user_id = $2"
   }
 }

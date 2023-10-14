@@ -1,3 +1,4 @@
 /target
 /.env
 /migrations
+/sqlx-data.json
