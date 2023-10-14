@@ -1,5 +1,5 @@
 use secrecy::{ExposeSecret, Secret};
-use serde::{Deserialize,};
+use serde::Deserialize;
 use sqlx::{postgres::{PgPool, PgPoolOptions, PgConnectOptions, PgSslMode}, ConnectOptions};
 use crate::AppError;
 use config::{Config, File};

@@ -15,7 +15,7 @@ RUN cargo chef cook --release --recipe-path recipe.json
 # all layers should be cached.
 COPY  . .
 # set env var sql_offline to TRUE
-ENV SQLX_OFFLINE true
+ARG SQLX_OFFLINE=true
 # build in relase mode
 RUN cargo build --release --bin password_manager_webapp
 # clean build environment
