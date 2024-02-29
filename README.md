@@ -14,7 +14,7 @@ $ cargo run
 The server will start running on http://localhost:6966.
 
 # API endpoints
-### he following endpoints are available
+### The following endpoints are available
 
 ## Env variable (.env file)
 you dont actually need to set the .env file manually. The project has been set up thorugh .yaml files.
