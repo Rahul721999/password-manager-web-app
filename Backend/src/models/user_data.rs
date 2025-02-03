@@ -1,38 +1,38 @@
-use chrono::{Utc, DateTime};
-use sqlx::{types::{Uuid}, FromRow, Type, Postgres, Encode};
+use chrono::{DateTime, Utc};
+use sqlx::{types::Uuid, Encode, FromRow, Postgres, Type};
 #[derive(Debug, Clone, FromRow, Encode)]
-pub struct UserData{
-    pub id : Uuid,
-    pub user_id : Uuid,
-    pub website_name : String,
-    pub website_url : String,
-    pub username : String,
-    pub password_hash  : Vec<u8>, 
-    pub created_at : DateTime<Utc>,
-    pub updated_at : DateTime<Utc>,
+pub struct UserData {
+    pub id: Uuid,
+    pub user_id: Uuid,
+    pub website_name: String,
+    pub website_url: String,
+    pub username: String,
+    pub password_hash: Vec<u8>,
+    pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
 }
-impl Type<Postgres> for UserData{
+impl Type<Postgres> for UserData {
     fn type_info() -> <Postgres as sqlx::Database>::TypeInfo {
         sqlx::postgres::PgTypeInfo::with_name("website_credentials")
     }
 }
-impl UserData{
+impl UserData {
     pub fn new(
-        user_id : Uuid, 
-        website_name : String, 
-        website_url : String,
-        username : String,
-        password_hash : Vec<u8>,
-    ) -> Self{
-        UserData { 
+        user_id: Uuid,
+        website_name: String,
+        website_url: String,
+        username: String,
+        password_hash: Vec<u8>,
+    ) -> Self {
+        UserData {
             id: Uuid::new_v4(),
-            user_id, 
-            website_name, 
-            website_url, 
-            username, 
-            password_hash, 
-            created_at: Utc::now(), 
-            updated_at: Utc::now()
+            user_id,
+            website_name,
+            website_url,
+            username,
+            password_hash,
+            created_at: Utc::now(),
+            updated_at: Utc::now(),
         }
     }
 }

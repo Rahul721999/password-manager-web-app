@@ -1,16 +1,16 @@
-use crate::{analyze_pass, valid_password, AppError, MyMiddleware, utils::encrypt, UserData};
+use crate::{analyze_pass, utils::encrypt, valid_password, AppError, MyMiddleware, UserData};
 use actix_web::{web, HttpResponse};
 use serde::Deserialize;
+use serde_json::json;
 use sqlx::{types::Uuid, PgPool};
 use tracing::{error, info};
-use serde_json::json;
 #[derive(Debug, Deserialize)]
 pub struct Data {
-    pub id : Option<Uuid>,
+    pub id: Option<Uuid>,
     pub website_name: Option<String>,
     pub website_url: Option<String>,
-    pub username : Option<String>,
-    pub password : Option<String>,
+    pub username: Option<String>,
+    pub password: Option<String>,
 }
 
 #[tracing::instrument(
@@ -21,16 +21,16 @@ pub async fn update(
     cred: web::Json<Data>,
     db: web::Data<PgPool>,
     mid: MyMiddleware,
-)-> Result<HttpResponse, AppError>{
+) -> Result<HttpResponse, AppError> {
     // if the ROW_id has not given...
-    if let Some(id) = cred.id{
-        if id.to_string().len() == 0{
+    if let Some(id) = cred.id {
+        if id.to_string().len() == 0 {
             return Err(AppError::BadRequest("Invalid ID"));
         }
     }
-    if cred.id.is_none(){
+    if cred.id.is_none() {
         return Err(AppError::BadRequest("id not provied"));
-    } 
+    }
     let row_id = cred.id.unwrap();
 
     // Extract Data from the token..
@@ -49,26 +49,28 @@ pub async fn update(
     .await
     .map_err(|err| {
         error!("❌ SELECT query failed: {}", err);
-        AppError::InternalServerError("Data not found in our DB".to_string())}
-    )?;
+        AppError::InternalServerError("Data not found in our DB".to_string())
+    })?;
 
     // update the data in existing_data if the None value is given
-    if let Some(website_name) = &cred.website_name{
+    if let Some(website_name) = &cred.website_name {
         data_present.website_name = website_name.to_owned();
     }
-    if let Some(website_name) = &cred.website_url{
+    if let Some(website_name) = &cred.website_url {
         data_present.website_url = website_name.to_owned();
     }
-    if let Some(username) = &cred.username{
+    if let Some(username) = &cred.username {
         data_present.username = username.to_owned();
     }
 
     let mut new_pass: String = "Prev-used-pass".to_string();
-    if let Some(password) = &cred.password{
+    if let Some(password) = &cred.password {
         new_pass = password.clone();
         // check the password validity and Strength..
-        if password.len() < 8{
-            return Err(AppError::BadRequest("You should choose password of length more than 8 character"));
+        if password.len() < 8 {
+            return Err(AppError::BadRequest(
+                "You should choose password of length more than 8 character",
+            ));
         }
         if let Err(_err) = valid_password(password) {
             return Err(AppError::BadRequest("Password must contain at least one UPPER-CASE, one lower-case, 1 number & a $pecial char"));
@@ -78,7 +80,9 @@ pub async fn update(
         let hash = match encrypt(password).await {
             Ok(hash) => hash,
             Err(_err) => {
-                return Err(AppError::InternalServerError("password encryption error".to_string()));
+                return Err(AppError::InternalServerError(
+                    "password encryption error".to_string(),
+                ));
             }
         };
         data_present.password_hash = hash;

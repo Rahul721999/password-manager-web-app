@@ -1,4 +1,4 @@
-const PRIV_KEY_STR : &str = "-----BEGIN PRIVATE KEY-----
+const PRIV_KEY_STR: &str = "-----BEGIN PRIVATE KEY-----
 MIIEvwIBADANBgkqhkiG9w0BAQEFAASCBKkwggSlAgEAAoIBAQDh4JTD0elyjZh0
 qwp3YXqpsiT3YbC+IavONo7WbN9aPJp6KhBAY58a02kkwpwzUO8yxqvruMuj3Nnb
 x70CkSXrCOvF9J3ctmMu565BRd0rwMCpWVqrVVMKQ7VbT+RCKVsIBY+lkVQ+ssUa
@@ -28,41 +28,48 @@ RjOduoRFwUzdDFa2V1TjppeFG8URQY1/NEEgBs0BK4TPHuJQWgTjr0IZ5PD8m85g
 -----END PRIVATE KEY-----";
 
 use crate::AppError;
-use rsa::{pkcs8::{DecodePrivateKey},Pkcs1v15Encrypt, RsaPublicKey, RsaPrivateKey};
+use rsa::{pkcs8::DecodePrivateKey, Pkcs1v15Encrypt, RsaPrivateKey, RsaPublicKey};
 use tracing::error;
-lazy_static::lazy_static!{
+lazy_static::lazy_static! {
     static ref PRIV_KEY : RsaPrivateKey = RsaPrivateKey::from_pkcs8_pem(PRIV_KEY_STR).expect("failed to get private_encryption_key");
-    static ref PUB_KEY : RsaPublicKey = PRIV_KEY.to_public_key(); 
+    static ref PUB_KEY : RsaPublicKey = PRIV_KEY.to_public_key();
 }
 
-pub async fn encrypt(value : &str) -> Result<Vec<u8>, AppError>{
+pub async fn encrypt(value: &str) -> Result<Vec<u8>, AppError> {
     let mut rand = rand::thread_rng();
 
-    match RsaPublicKey::encrypt(&PUB_KEY, &mut rand,Pkcs1v15Encrypt, value.as_bytes()){
+    match RsaPublicKey::encrypt(&PUB_KEY, &mut rand, Pkcs1v15Encrypt, value.as_bytes()) {
         Ok(r) => Ok(r),
-        Err(err) =>{ 
+        Err(err) => {
             error!("❌Failed to encrypt pass: {}", err);
-            Err(AppError::InternalServerError("failed to encrypt password".to_string()))
-        },
+            Err(AppError::InternalServerError(
+                "failed to encrypt password".to_string(),
+            ))
+        }
     }
 }
 
-pub async fn decrypt(value : Vec<u8>) -> Result<String,AppError>{
-    match PRIV_KEY.decrypt(Pkcs1v15Encrypt, &value){
+pub async fn decrypt(value: Vec<u8>) -> Result<String, AppError> {
+    match PRIV_KEY.decrypt(Pkcs1v15Encrypt, &value) {
         Ok(res) => {
             // res is in Vec<u8>
             // convert it to string before returning
-            let res = match String::from_utf8(res){
+            let res = match String::from_utf8(res) {
                 Ok(r) => r,
                 Err(err) => {
                     error!("❌ Failed to convert decrypted password to String: {}", err);
-                    return Err(AppError::InternalServerError("decrypt password error".to_string()))}
+                    return Err(AppError::InternalServerError(
+                        "decrypt password error".to_string(),
+                    ));
+                }
             };
             Ok(res)
-        },
+        }
         Err(err) => {
             error!("❌ Failed to decrypt the stored_password: {}", err);
-            Err(AppError::InternalServerError("password couldn't be decrypted".to_string()))
+            Err(AppError::InternalServerError(
+                "password couldn't be decrypted".to_string(),
+            ))
         }
     }
 }

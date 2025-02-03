@@ -1,9 +1,9 @@
-use crate::{analyze_pass, valid_password, AppError, MyMiddleware, utils::encrypt};
+use crate::{analyze_pass, utils::encrypt, valid_password, AppError, MyMiddleware};
 use actix_web::{web, HttpResponse};
 use serde::Deserialize;
+use serde_json::json;
 use sqlx::{types::Uuid, PgPool};
 use tracing::{error, info};
-use serde_json::json;
 #[derive(Debug, Deserialize)]
 pub struct Data {
     pub website_name: String,
@@ -25,19 +25,21 @@ pub async fn store(
     let user_id = mid.user_id;
 
     // form validation
-    if cred.website_url.is_empty(){
+    if cred.website_url.is_empty() {
         return Err(AppError::BadRequest("Invalid Website Url"));
     }
-    if cred.website_name.is_empty(){
+    if cred.website_name.is_empty() {
         return Err(AppError::BadRequest("Invalid Website Name"));
     }
     // check the password validity and Strength..
     if let Err(_err) = valid_password(&cred.password) {
-        if cred.password.is_empty(){
+        if cred.password.is_empty() {
             return Err(AppError::BadRequest("Password cannot be empty"));
         }
-        if cred.password.len() < 8{
-            return Err(AppError::BadRequest("You should choose password of length more than 8 character"));
+        if cred.password.len() < 8 {
+            return Err(AppError::BadRequest(
+                "You should choose password of length more than 8 character",
+            ));
         }
         return Err(AppError::BadRequest("Password must contain at least one UPPER-CASE, one lower-case, 1 number & a $pecial char"));
     }
@@ -58,23 +60,25 @@ pub async fn store(
     .await
     .map_err(|err| {
         error!("Exists query failed: {}", err);
-        AppError::InternalServerError("Searching db failed".to_string())}
-    )?;
+        AppError::InternalServerError("Searching db failed".to_string())
+    })?;
 
     // if (user_id & website_url) present in db
     if data_present {
         // get the pass & compare with the given pass..
         // if the (website_url & the pass) combination is the same..
         // return
-            // return Ok(HttpResponse::Ok().json(json!({"message" : "Data already present" })));
-            return Err(AppError::Conflict("Data already present".to_string()));
+        // return Ok(HttpResponse::Ok().json(json!({"message" : "Data already present" })));
+        return Err(AppError::Conflict("Data already present".to_string()));
         // else try updating the password for the given website_url.
     }
     // else store the credentials to the DB..
     let hash = match encrypt(&cred.password).await {
         Ok(hash) => hash,
         Err(_err) => {
-            return Err(AppError::InternalServerError("password encryption error".to_string()));
+            return Err(AppError::InternalServerError(
+                "password encryption error".to_string(),
+            ));
         }
     };
 

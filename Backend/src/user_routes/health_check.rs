@@ -1,4 +1,4 @@
-use actix_web::{Responder, HttpResponse};
+use actix_web::{HttpResponse, Responder};
 use serde_json::json;
 use tracing::info;
 
@@ -8,6 +8,5 @@ use tracing::info;
 )]
 pub async fn greet() -> impl Responder {
     info!("✅ Health-check fn called");
-    HttpResponse::Ok()
-        .json(json!({"message" : "Health-Check Successful"}))
+    HttpResponse::Ok().json(json!({"message" : "Health-Check Successful"}))
 }

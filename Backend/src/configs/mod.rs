@@ -1,11 +1,14 @@
-use secrecy::{ExposeSecret, Secret};
-use serde::Deserialize;
-use sqlx::{postgres::{PgPool, PgPoolOptions, PgConnectOptions, PgSslMode}, ConnectOptions};
 use crate::AppError;
 use config::{Config, File};
+use secrecy::{ExposeSecret, Secret};
+use serde::Deserialize;
 use serde_aux::field_attributes::deserialize_number_from_string;
+use sqlx::{
+    postgres::{PgConnectOptions, PgPool, PgPoolOptions, PgSslMode},
+    ConnectOptions,
+};
 
-#[derive(Debug, Deserialize,Clone)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct DatabaseSettings {
     pub host: String,
     #[serde(deserialize_with = "deserialize_number_from_string")]
@@ -13,14 +16,14 @@ pub struct DatabaseSettings {
     pub username: String,
     pub password: Secret<String>,
     pub name: String,
-    pub require_ssl : bool,
+    pub require_ssl: bool,
 }
 ///implementing database settings
-impl DatabaseSettings{
-    pub fn without_db(&self)->PgConnectOptions{
-        let ssl_req = if self.require_ssl{
+impl DatabaseSettings {
+    pub fn without_db(&self) -> PgConnectOptions {
+        let ssl_req = if self.require_ssl {
             PgSslMode::Require
-        }else{
+        } else {
             PgSslMode::Prefer
         };
         PgConnectOptions::new()
@@ -30,7 +33,7 @@ impl DatabaseSettings{
             .port(self.port)
             .ssl_mode(ssl_req)
     }
-    pub fn with_db(&self)-> PgConnectOptions{
+    pub fn with_db(&self) -> PgConnectOptions {
         let mut options = self.without_db().database(&self.name);
         options.log_statements(tracing::log::LevelFilter::Trace);
         options
@@ -44,17 +47,17 @@ pub struct ApplicationSettings {
     pub port: u16,
     pub jwt_key: Secret<String>,
     pub jwt_exp: u16,
-    pub log_level: String
+    pub log_level: String,
 }
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct FrontendSettings {
-    pub url : String,
+    pub url: String,
 }
 
 #[derive(Debug, Deserialize)]
 pub struct Settings {
-    pub frontend : FrontendSettings,
+    pub frontend: FrontendSettings,
     pub database: DatabaseSettings,
     pub application: ApplicationSettings,
 }
@@ -69,12 +72,13 @@ impl Settings {
             .try_into()
             .expect("Failed to parse App Environment");
         // let environment = Environment::Production;
-        let config = config
-            .add_source(File::from(config_dir.join(environment.as_str())));
+        let config = config.add_source(File::from(config_dir.join(environment.as_str())));
 
-        let set_con = match config.add_source(config::Environment::with_prefix("app").separator("__"))
-        .build(){
-            Ok(config) => config,   
+        let set_con = match config
+            .add_source(config::Environment::with_prefix("app").separator("__"))
+            .build()
+        {
+            Ok(config) => config,
             Err(err) => {
                 tracing::error!("❌Failed to create configuration: {}", err);
                 return Err(AppError::InternalServerError(
@@ -99,11 +103,10 @@ impl Settings {
             db.port,
             db.name
         );
-        tracing::info!("🚀 Database url: {}",database_url);
+        tracing::info!("🚀 Database url: {}", database_url);
         PgPoolOptions::new()
             .acquire_timeout(std::time::Duration::from_secs(2))
             .connect_lazy_with(self.database.with_db())
-        
     }
 }
 

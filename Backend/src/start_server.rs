@@ -1,9 +1,5 @@
 use actix_cors::Cors;
-use actix_web::{
-    http::header,
-    middleware::{Compat},
-    web, App, HttpServer,
-};
+use actix_web::{http::header, middleware::Compat, web, App, HttpServer};
 use lib::*;
 use tracing::info;
 use tracing_actix_web::TracingLogger;
@@ -20,14 +16,15 @@ pub async fn start(config: Settings) -> std::io::Result<()> {
     info!("⚠️ Log-Level : {}", app.log_level.clone());
     HttpServer::new(move || {
         // set cors
-        
+
         let cors = Cors::default()
             .allowed_origin(&frontend_url)
-            .allowed_methods(vec!["GET", "POST","DELETE", "PATCH","PUT"])
+            .allowed_methods(vec!["GET", "POST", "DELETE", "PATCH", "PUT"])
             .allowed_headers(vec![
-                header::AUTHORIZATION, 
+                header::AUTHORIZATION,
                 header::ACCEPT,
-                header::CONTENT_TYPE])
+                header::CONTENT_TYPE,
+            ])
             .max_age(3600);
 
         App::new()
@@ -53,7 +50,7 @@ pub async fn start(config: Settings) -> std::io::Result<()> {
                     .route("/get_all", web::get().to(fetch_all))
                     .route("/update", web::patch().to(update))
                     .route("/delete", web::delete().to(delete))
-                    .route("/generate_password", web::get().to(generate))
+                    .route("/generate_password", web::get().to(generate)),
             )
             .wrap(TracingLogger::<DomainSpanBuilder>::new())
             .app_data(web::Data::new(db.clone()))

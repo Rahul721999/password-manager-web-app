@@ -1,7 +1,6 @@
 use crate::{
     utils::{valid_email, valid_password, verify_pass},
     AppError, MyMiddleware, UserCred,
-    
 };
 use actix_web::{web, HttpResponse};
 use serde::Deserialize;
@@ -27,7 +26,7 @@ pub struct LoginCred {
 pub async fn del_acc(
     user_cred: web::Json<LoginCred>,
     db: web::Data<PgPool>,
-    mid : MyMiddleware,
+    mid: MyMiddleware,
 ) -> Result<HttpResponse, AppError> {
     //1. form validation..
     match user_cred.validate() {
@@ -45,16 +44,12 @@ pub async fn del_acc(
         },
     };
     // Extract Data from the token..
-    let (user_id, user_email) = ( mid.user_id, mid.user_email);
+    let (user_id, user_email) = (mid.user_id, mid.user_email);
     // 3. Verify the credentiala..
     // 3.1 get the hashed_pass..
-    let row = match sqlx::query_as!(
-        UserCred,
-        "SELECT * FROM user_cred WHERE id = $1",
-        user_id
-    )
-    .fetch_optional(db.as_ref())
-    .await
+    let row = match sqlx::query_as!(UserCred, "SELECT * FROM user_cred WHERE id = $1", user_id)
+        .fetch_optional(db.as_ref())
+        .await
     {
         Ok(row) => {
             if let Some(r) = row {
@@ -68,7 +63,9 @@ pub async fn del_acc(
         }
         Err(err) => {
             error!("❌SELECT query failed: {}", err);
-            return Err(AppError::InternalServerError("Failed to search your data while performing delete operation".to_string()));
+            return Err(AppError::InternalServerError(
+                "Failed to search your data while performing delete operation".to_string(),
+            ));
         }
     };
 
@@ -78,16 +75,25 @@ pub async fn del_acc(
         return Err(AppError::AuthError("Unauthorize User".to_string()));
     }
 
-
     // 4. Delete user Data before comeplete the Delete req..
-    match sqlx::query!("DELETE FROM website_credentials WHERE user_id = $1", user_id)
-        .execute(db.as_ref())
-        .await{
-            Ok(..) => {info!("Deleting the user_data first")}
-            Err(err) => {
-                error!("❌ Error while deleting User_data");
-                return Err(AppError::InternalServerError(format!("Failed to delete user_data, Error: {}",err)));}
-        };
+    match sqlx::query!(
+        "DELETE FROM website_credentials WHERE user_id = $1",
+        user_id
+    )
+    .execute(db.as_ref())
+    .await
+    {
+        Ok(..) => {
+            info!("Deleting the user_data first")
+        }
+        Err(err) => {
+            error!("❌ Error while deleting User_data");
+            return Err(AppError::InternalServerError(format!(
+                "Failed to delete user_data, Error: {}",
+                err
+            )));
+        }
+    };
 
     // 5. Complete Delete req..
     match sqlx::query!(
@@ -104,7 +110,9 @@ pub async fn del_acc(
         }
         Err(err) => {
             error!("❌DELETE query failed : {}", err);
-            Err(AppError::InternalServerError("Failed to delete your account".to_string()))
+            Err(AppError::InternalServerError(
+                "Failed to delete your account".to_string(),
+            ))
         }
     }
 }

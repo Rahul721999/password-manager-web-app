@@ -1,8 +1,7 @@
-use validator::ValidationError;
 use crate::EMAIL_REGEX;
+use validator::ValidationError;
 
-pub fn valid_email(email: &str) -> Result<(), ValidationError>{
-    
+pub fn valid_email(email: &str) -> Result<(), ValidationError> {
     if EMAIL_REGEX.is_match(email) {
         Ok(())
     } else {
@@ -10,7 +9,7 @@ pub fn valid_email(email: &str) -> Result<(), ValidationError>{
     }
 }
 
-pub fn valid_password(password : &str)-> Result<(), ValidationError>{
+pub fn valid_password(password: &str) -> Result<(), ValidationError> {
     let mut has_whitespace = false;
     let mut has_upper = false;
     let mut has_lower = false;
@@ -24,7 +23,8 @@ pub fn valid_password(password : &str)-> Result<(), ValidationError>{
         has_digit |= c.is_ascii_digit();
         has_special |= c.is_ascii_punctuation();
     }
-    if !has_whitespace && has_upper && has_lower && has_digit && has_special && password.len() >= 8 {
+    if !has_whitespace && has_upper && has_lower && has_digit && has_special && password.len() >= 8
+    {
         Ok(())
     } else {
         Err(ValidationError::new("Password is not strong enough"))

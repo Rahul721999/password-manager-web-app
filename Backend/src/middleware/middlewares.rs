@@ -4,8 +4,8 @@ use futures::future::{self, Ready};
 use sqlx::types::Uuid;
 #[derive(Debug)]
 pub struct MyMiddleware {
-    pub user_id : Uuid,
-    pub user_email : String,
+    pub user_id: Uuid,
+    pub user_email: String,
 }
 
 // impl debug trait manually
@@ -34,9 +34,10 @@ impl FromRequest for MyMiddleware {
             auth_token = token.to_str().expect("Failed to get Auth Token as str");
             // 1. Extract Data from the token..
             match TokenClaims::decode_token(auth_token, config) {
-                Ok(claims) => {
-                    future::ok(MyMiddleware {user_id : claims.id, user_email : claims.email })
-                },
+                Ok(claims) => future::ok(MyMiddleware {
+                    user_id: claims.id,
+                    user_email: claims.email,
+                }),
                 Err(err) => future::err(err),
             }
         } else {
