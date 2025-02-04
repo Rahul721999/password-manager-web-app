@@ -3,11 +3,18 @@ use actix_web::{http::header, middleware::Compat, web, App, HttpServer};
 use lib::*;
 use tracing::info;
 use tracing_actix_web::TracingLogger;
+use tracing_log::log::error;
 
 pub async fn start(config: Settings) -> std::io::Result<()> {
     //get the db
     let app = config.application.clone();
     let db = config.run();
+
+    // apply migration manually
+    if let Err(err) = sqlx::migrate!("./migrations").run(&db).await{
+        error!("❌ Failed to apply migration: {err}");
+    }
+
     let frontend_url = config.frontend.url.clone();
     // let frontend_url = "localhost:6428";
     let configuration = web::Data::new(config);

@@ -1,0 +1,27 @@
+services:
+  postgres:
+    image: postgres
+    container_name: postgres_db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: Rrmondal12
+      POSTGRES_DB: password-manager
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  backend:
+    image: password_manager
+    build: .
+    container_name: password_manager_app
+    depends_on:
+      - postgres
+    environment:
+      DATABASE_URL: "postgres://postgres:Rrmondal12@postgres:5432/password-manager"
+    ports:
+      - "7000:7000"
+
+volumes:
+  postgres_data:
