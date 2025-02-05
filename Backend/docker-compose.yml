@@ -18,8 +18,6 @@ services:
     container_name: password_manager_app
     depends_on:
       - postgres
-    environment:
-      DATABASE_URL: "postgres://postgres:Rrmondal12@postgres:5432/password-manager"
     ports:
       - "7000:7000"
 

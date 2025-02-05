@@ -10,13 +10,10 @@ RUN cargo chef prepare --recipe-path recipe.json
 # ------------------------- Builder stage ------------------------- #
 FROM chef AS builder
 COPY --from=planner /password_manager/recipe.json recipe.json
-# Build out project dependencies, not our application!
 RUN cargo chef cook --release --recipe-path recipe.json
-RUN cargo install sqlx-cli
-# Upto this point, if our dependency tree stays the same
-# all layers should be cached.
+
 COPY . .
-# Set env var sql_offline to TRUE
+
 ARG SQLX_OFFLINE=true
 # Build in release mode
 RUN cargo build --release --bin password_manager_webapp
@@ -44,9 +41,8 @@ COPY configuration configuration
 COPY sqlx-data.json .
 
 # ------------------ Set App_Env to PRODUCTION ------------------ #
-ENV APP_ENVIRONMENT=production
+ENV APP_ENVIRONMENT=docker
 
 # ------------------------ Run migrations & start service ------------------------ #
 USER root
-# CMD ["sh", "-c", "./sqlx migrate run && ./password_manager_webapp"]
 CMD ["./password_manager_webapp"]

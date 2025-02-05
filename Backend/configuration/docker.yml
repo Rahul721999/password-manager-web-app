@@ -3,4 +3,4 @@ application:
   log_level: "ERROR"
 database:
   host: "postgres"
-  require_ssl: true
+  require_ssl: false

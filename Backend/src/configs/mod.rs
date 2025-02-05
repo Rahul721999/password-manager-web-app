@@ -63,34 +63,41 @@ pub struct Settings {
 }
 impl Settings {
     pub fn get_config() -> Result<Settings, AppError> {
-        let base_path = std::env::current_dir().expect("Failed to get the curr dir");
+        // Get the base configuration directory relative to the current working directory
+        let base_path = std::env::current_dir().expect("Failed to get current directory");
         let config_dir = base_path.join("configuration");
-        let config =
-            Config::builder().add_source(File::from(config_dir.join("base")).required(true));
+    
+        // Load the base configuration file (contains default values)
+        let config = Config::builder().add_source(File::from(config_dir.join("base")).required(true));
+    
+        // Determine runtime environment (defaults to "local" if not set)
         let environment: Environment = std::env::var("APP_ENVIRONMENT")
             .unwrap_or_else(|_| "local".into())
             .try_into()
-            .expect("Failed to parse App Environment");
-        // let environment = Environment::Production;
+            .expect("Invalid APP_ENVIRONMENT value");
+    
+        // Load environment-specific configuration to override base values
         let config = config.add_source(File::from(config_dir.join(environment.as_str())));
-
-        let set_con = match config
-            .add_source(config::Environment::with_prefix("app").separator("__"))
+    
+        // Load environment variables prefixed with "APP__" (e.g., APP__DATABASE__HOST → settings.database.host)
+        let set_config = match config
+            .add_source(config::Environment::with_prefix("APP").separator("__"))
             .build()
         {
             Ok(config) => config,
             Err(err) => {
-                tracing::error!("❌Failed to create configuration: {}", err);
-                return Err(AppError::InternalServerError(
-                    "Application Configuration Error".to_string(),
-                ));
+                tracing::error!("❌ Failed to create configuration: {}", err);
+                return Err(AppError::InternalServerError("Configuration Error".to_string()));
             }
         };
-        let settings = set_con
+    
+        // Deserialize configuration into a strongly-typed Settings struct
+        let settings = set_config
             .try_deserialize::<Settings>()
-            .expect("Failed to parse config to Settings Struct");
+            .expect("Failed to parse configuration");
         Ok(settings)
     }
+    
 
     /// fn to Connect the db...
     pub fn run(&self) -> PgPool {
@@ -113,12 +120,14 @@ impl Settings {
 /// The possible runtime environment for our application.
 pub enum Environment {
     Local,
+    Docker,
     Production,
 }
 impl Environment {
     pub fn as_str(&self) -> &'static str {
         match self {
             Environment::Local => "local",
+            Environment::Docker => "docker",
             Environment::Production => "production",
         }
     }
@@ -130,6 +139,7 @@ impl TryFrom<String> for Environment {
     fn try_from(s: String) -> Result<Self, Self::Error> {
         match s.to_lowercase().as_str() {
             "local" => Ok(Self::Local),
+            "docker" => Ok(Self::Docker),
             "production" => Ok(Self::Production),
             other => Err(format!(
                 "{} is not a supported env. Use either 'local' or 'production'.",
