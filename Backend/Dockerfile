@@ -40,9 +40,6 @@ COPY configuration configuration
 
 COPY sqlx-data.json .
 
-# ------------------ Set App_Env to PRODUCTION ------------------ #
-ENV APP_ENVIRONMENT=docker
-
 # ------------------------ Run migrations & start service ------------------------ #
 USER root
 CMD ["./password_manager_webapp"]
