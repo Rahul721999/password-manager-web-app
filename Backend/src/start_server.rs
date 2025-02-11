@@ -5,6 +5,7 @@ use lib::*;
 use tracing::info;
 use tracing_actix_web::TracingLogger;
 use tracing_log::log::error;
+use std::io::{Error, ErrorKind};
 
 pub async fn start(config: Settings) -> std::io::Result<()> {
     // *get the db
@@ -21,7 +22,10 @@ pub async fn start(config: Settings) -> std::io::Result<()> {
         .seconds_per_request(1)
         .burst_size(1)
         .finish()
-        .unwrap();
+        .ok_or_else(|| {
+            error!("❌ Failed to setup rate limiter");
+            Error::new(ErrorKind::Other, "Failed to setup rate limiter")
+        })?;
 
     let frontend_url = config.frontend.url.clone();
     let configuration = web::Data::new(config);
