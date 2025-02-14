@@ -47,7 +47,10 @@ pub async fn del_acc(
     let (user_id, user_email) = (mid.user_id, mid.user_email);
     // 3. Verify the credentiala..
     // 3.1 get the hashed_pass..
-    let row = match sqlx::query_as!(UserCred, "SELECT * FROM user_cred WHERE id = $1", user_id)
+    let row = match sqlx::query_as::<_, UserCred>(
+        "SELECT id, auth_provider, email, google_id, password_hash, first_name, last_name FROM user_cred WHERE id = $1"
+    )
+        .bind(user_id)
         .fetch_optional(db.as_ref())
         .await
     {
@@ -69,7 +72,7 @@ pub async fn del_acc(
         }
     };
 
-    let password = row.password_hash;
+    let password = row.password_hash.unwrap(); // ! TODO: Remove unwrap()
     // 3.2 compare the hashed_pass with entered_pass
     if !verify_pass(user_cred.password.clone().as_str(), password.as_str()).await {
         return Err(AppError::AuthError("Unauthorize User".to_string()));

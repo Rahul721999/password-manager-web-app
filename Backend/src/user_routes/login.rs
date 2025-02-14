@@ -1,6 +1,5 @@
 use crate::{
-    utils::{valid_email, valid_password, verify_pass},
-    AppError, Settings, TokenClaims, UserCred,
+    models::AuthProvider, utils::{valid_email, valid_password, verify_pass}, AppError, Settings, TokenClaims, UserCred
 };
 use actix_web::{web, HttpResponse};
 use chrono::{Duration, Utc};
@@ -45,11 +44,10 @@ pub async fn login(
     };
 
     // 2. fetch the hashed_password from the db..
-    let row = match sqlx::query_as!(
-        UserCred,
-        "SELECT * FROM user_cred WHERE email = $1",
-        user_cred.email.clone()
+    let row = match sqlx::query_as::<_, UserCred>(
+        "SELECT id, auth_provider, email, google_id, password_hash, first_name, last_name FROM user_cred WHERE email = $1", 
     )
+    .bind(user_cred.email.clone())
     .fetch_optional(db.as_ref())
     .await
     {
@@ -68,12 +66,15 @@ pub async fn login(
         }
     };
 
-    let password = row.password_hash;
+    if row.auth_provider !=  AuthProvider::Google{
+        tracing::info!("Logging in with email, Authprovider: {}", row.auth_provider);
+    };
+    let password = row.password_hash.unwrap(); // ! TODO: Remove unwrap()
     // 3. compare the hashed_pass with entered_pass
     if !verify_pass(user_cred.password.clone().as_str(), password.as_str()).await {
         return Err(AppError::AuthError("Unauthorize User".to_string()));
     }
-    // NEED TO ADD SECOND STEP VERIFICATION HERE...
+    // TODO: NEED TO ADD SECOND STEP VERIFICATION HERE...
     // 4. if credectials matches generate & return JWT
     let claim = TokenClaims {
         id: row.id,
