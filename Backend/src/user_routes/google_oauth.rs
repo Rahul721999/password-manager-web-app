@@ -90,7 +90,7 @@ async fn verify_google_token(token: &str) -> Result<GoogleClaims, String> {
     match response {
         Ok(resp) => {
             if resp.status().is_success() {
-                let claims: GoogleClaims = resp.json().await.unwrap(); // TODO: Remove unwrap()
+                let claims: GoogleClaims = resp.json().await.map_err(|_| "Failed to parse token response".to_string())?;
                 Ok(claims)
             } else {
                 Err("Invalid Google token".to_string())
