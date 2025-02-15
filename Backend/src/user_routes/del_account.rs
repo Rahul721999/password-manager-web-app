@@ -1,4 +1,5 @@
 use crate::{
+    models::AuthProvider,
     utils::{valid_email, valid_password, verify_pass},
     AppError, MyMiddleware, UserCred,
 };
@@ -72,7 +73,12 @@ pub async fn del_acc(
         }
     };
 
-    let password = row.password_hash.unwrap(); // ! TODO: Remove unwrap()
+    if row.auth_provider == AuthProvider::Google {
+        tracing::warn!("Authprovider: {}", row.auth_provider);
+        return Err(AppError::AuthError("Try login with google".to_string()));
+    };
+    let password = row.password_hash.unwrap_or("".to_string());
+
     // 3.2 compare the hashed_pass with entered_pass
     if !verify_pass(user_cred.password.clone().as_str(), password.as_str()).await {
         return Err(AppError::AuthError("Unauthorize User".to_string()));

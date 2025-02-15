@@ -66,19 +66,20 @@ impl Settings {
         // Get the base configuration directory relative to the current working directory
         let base_path = std::env::current_dir().expect("Failed to get current directory");
         let config_dir = base_path.join("configuration");
-    
+
         // Load the base configuration file (contains default values)
-        let config = Config::builder().add_source(File::from(config_dir.join("base")).required(true));
-    
+        let config =
+            Config::builder().add_source(File::from(config_dir.join("base")).required(true));
+
         // Determine runtime environment (defaults to "local" if not set)
         let environment: Environment = std::env::var("APP_ENVIRONMENT")
             .unwrap_or_else(|_| "local".into())
             .try_into()
             .expect("Invalid APP_ENVIRONMENT value");
-    
+
         // Load environment-specific configuration to override base values
         let config = config.add_source(File::from(config_dir.join(environment.as_str())));
-    
+
         // Load environment variables prefixed with "APP__" (e.g., APP__DATABASE__HOST → settings.database.host)
         let set_config = match config
             .add_source(config::Environment::with_prefix("APP").separator("__"))
@@ -87,17 +88,18 @@ impl Settings {
             Ok(config) => config,
             Err(err) => {
                 tracing::error!("❌ Failed to create configuration: {}", err);
-                return Err(AppError::InternalServerError("Configuration Error".to_string()));
+                return Err(AppError::InternalServerError(
+                    "Configuration Error".to_string(),
+                ));
             }
         };
-    
+
         // Deserialize configuration into a strongly-typed Settings struct
         let settings = set_config
             .try_deserialize::<Settings>()
             .expect("Failed to parse configuration");
         Ok(settings)
     }
-    
 
     /// fn to Connect the db...
     pub fn run(&self) -> PgPool {

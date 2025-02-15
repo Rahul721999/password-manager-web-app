@@ -2,7 +2,7 @@ pub mod configs;
 pub use configs::{ApplicationSettings, DatabaseSettings, Settings};
 
 pub mod user_routes;
-pub use user_routes::{del_acc, health_check::greet, login, sign_up, google_oauth::google_auth};
+pub use user_routes::{del_acc, google_oauth::google_auth, health_check::greet, login, sign_up};
 
 pub mod feature_route;
 pub use feature_route::{

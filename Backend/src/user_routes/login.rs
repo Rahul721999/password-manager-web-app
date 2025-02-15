@@ -1,5 +1,7 @@
 use crate::{
-    models::AuthProvider, utils::{valid_email, valid_password, verify_pass}, AppError, Settings, TokenClaims, UserCred
+    models::AuthProvider,
+    utils::{valid_email, valid_password, verify_pass},
+    AppError, Settings, TokenClaims, UserCred,
 };
 use actix_web::{web, HttpResponse};
 use chrono::{Duration, Utc};
@@ -66,10 +68,12 @@ pub async fn login(
         }
     };
 
-    if row.auth_provider !=  AuthProvider::Google{
-        tracing::info!("Logging in with email, Authprovider: {}", row.auth_provider);
+    if row.auth_provider == AuthProvider::Google {
+        tracing::warn!("Authprovider: {}", row.auth_provider);
+        return Err(AppError::AuthError("Try login with google".to_string()));
     };
-    let password = row.password_hash.unwrap(); // ! TODO: Remove unwrap()
+    let password = row.password_hash.unwrap_or("".to_string());
+
     // 3. compare the hashed_pass with entered_pass
     if !verify_pass(user_cred.password.clone().as_str(), password.as_str()).await {
         return Err(AppError::AuthError("Unauthorize User".to_string()));
