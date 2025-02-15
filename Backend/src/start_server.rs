@@ -52,6 +52,13 @@ pub async fn start(config: Settings) -> std::io::Result<()> {
             .wrap(TracingLogger::default())
             .route("/", web::get().to(greet))
             .service(
+                web::scope("/oauth")
+                    .app_data(web::Data::new(db.clone()))
+                    .app_data(configuration.clone())
+                    .wrap(Compat::new(TracingLogger::default()))
+                    .route("/google", web::post().to(google_auth)),
+            )
+            .service(
                 web::scope("/Auth")
                     .app_data(web::Data::new(db.clone()))
                     .app_data(configuration.clone())
