@@ -23,15 +23,14 @@ pub async fn update(
     mid: MyMiddleware,
 ) -> Result<HttpResponse, AppError> {
     // if the ROW_id has not given...
-    if let Some(id) = cred.id {
+    let row_id = if let Some(id) = cred.id {
         if id.to_string().len() == 0 {
             return Err(AppError::BadRequest("Invalid ID"));
-        }
-    }
-    if cred.id.is_none() {
+        };
+        id
+    } else {
         return Err(AppError::BadRequest("id not provied"));
-    }
-    let row_id = cred.id.unwrap();
+    };
 
     // Extract Data from the token..
     let user_id = mid.user_id;

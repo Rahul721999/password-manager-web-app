@@ -2,10 +2,10 @@ use actix_cors::Cors;
 use actix_governor::{Governor, GovernorConfigBuilder};
 use actix_web::{http::header, middleware::Compat, web, App, HttpServer};
 use lib::*;
+use std::io::{Error, ErrorKind};
 use tracing::info;
 use tracing_actix_web::TracingLogger;
 use tracing_log::log::error;
-use std::io::{Error, ErrorKind};
 
 pub async fn start(config: Settings) -> std::io::Result<()> {
     // *get the db
@@ -51,6 +51,13 @@ pub async fn start(config: Settings) -> std::io::Result<()> {
             .wrap(cors)
             .wrap(TracingLogger::default())
             .route("/", web::get().to(greet))
+            .service(
+                web::scope("/oauth")
+                    .app_data(web::Data::new(db.clone()))
+                    .app_data(configuration.clone())
+                    .wrap(Compat::new(TracingLogger::default()))
+                    .route("/google", web::post().to(google_auth)),
+            )
             .service(
                 web::scope("/Auth")
                     .app_data(web::Data::new(db.clone()))
