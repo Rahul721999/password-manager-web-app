@@ -1,7 +1,7 @@
 # This is for local development
 services:
   postgres:
-    image: postgres
+    image: postgres:latest
     container_name: postgres_db
     restart: always
     environment:
@@ -12,6 +12,12 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+  redis:
+    image: redis:latest
+    ports:
+      - 6379:6379
+    volumes:
+      - "redis_data:/var/lib/redis/data"
 
   backend:
     image: password_manager
@@ -23,8 +29,13 @@ services:
       APP_ENVIRONMENT: "docker"
     depends_on:
       - postgres
+      - redis
     ports:
       - "7000:7000"
 
+  
 volumes:
   postgres_data:
+    driver: local
+  redis_data:
+    driver: local

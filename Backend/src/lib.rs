@@ -19,6 +19,7 @@ pub use utils::{
     gen_token::TokenClaims,
     hashing::{hash_pass, verify_pass},
     pass_strength::{analyze_pass, generate_pass},
+    rate_limiter::initialize_limiter,
     validator_module::{valid_email, valid_password},
 };
 
