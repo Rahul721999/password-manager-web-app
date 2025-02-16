@@ -13,4 +13,6 @@ database:
   username: "postgres"
   password: "Rrmondal12"
   name: "password-manager"
+redis:
+  url: redis://127.0.0.1:6379
   

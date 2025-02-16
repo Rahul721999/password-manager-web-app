@@ -4,3 +4,5 @@ application:
 database:
   host: "postgres"
   require_ssl: false
+redis:
+  url: redis://redis:6379

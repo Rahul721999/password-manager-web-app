@@ -1,6 +1,6 @@
-use std::fmt::Display;
 use serde::{Deserialize, Serialize};
 use sqlx::types::Uuid;
+use std::fmt::Display;
 #[derive(Debug, Serialize, Deserialize, Clone, sqlx::FromRow)]
 pub struct UserCred {
     pub id: Uuid,

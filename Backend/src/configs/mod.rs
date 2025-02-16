@@ -54,12 +54,17 @@ pub struct ApplicationSettings {
 pub struct FrontendSettings {
     pub url: String,
 }
+#[derive(Debug, Deserialize, Clone)]
+pub struct RedisDBSettings {
+    pub url: String,
+}
 
 #[derive(Debug, Deserialize)]
 pub struct Settings {
     pub frontend: FrontendSettings,
     pub database: DatabaseSettings,
     pub application: ApplicationSettings,
+    pub redis: RedisDBSettings,
 }
 impl Settings {
     pub fn get_config() -> Result<Settings, AppError> {

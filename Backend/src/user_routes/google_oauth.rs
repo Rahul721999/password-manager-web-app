@@ -1,4 +1,5 @@
-use crate::{models::AuthProvider, AppError, Settings, TokenClaims, UserCred};
+use crate::models::AuthProvider;
+use crate::{AppError, Settings, TokenClaims, UserCred};
 use actix_web::{web, HttpResponse};
 use chrono::{Duration, Utc};
 use serde::{Deserialize, Serialize};
@@ -90,7 +91,10 @@ async fn verify_google_token(token: &str) -> Result<GoogleClaims, String> {
     match response {
         Ok(resp) => {
             if resp.status().is_success() {
-                let claims: GoogleClaims = resp.json().await.map_err(|_| "Failed to parse token response".to_string())?;
+                let claims: GoogleClaims = resp
+                    .json()
+                    .await
+                    .map_err(|_| "Failed to parse token response".to_string())?;
                 Ok(claims)
             } else {
                 Err("Invalid Google token".to_string())
@@ -107,17 +111,17 @@ async fn handle_oauth_signup(
 ) -> Result<Uuid, AppError> {
     let user_id = Uuid::new_v4(); // generate new Uuid
 
-    let result = sqlx::query!(
+    let result = sqlx::query_as::<_, UserCred>(
         "INSERT INTO user_cred (id, auth_provider, google_id, email, first_name, last_name) 
          VALUES ($1, $2, $3, $4, $5, $6)",
-        user_id,
-        AuthProvider::Google as AuthProvider, // Use string instead of Enum
-        google_user.sub,
-        google_user.email,
-        google_user.given_name.as_deref().unwrap_or(""),
-        google_user.family_name.as_deref().unwrap_or(""),
     )
-    .execute(db.as_ref())
+    .bind(user_id)
+    .bind(AuthProvider::Google)
+    .bind(google_user.sub.to_owned())
+    .bind(google_user.email.to_owned())
+    .bind(google_user.given_name.as_deref().unwrap_or(""))
+    .bind(google_user.family_name.as_deref().unwrap_or(""))
+    .fetch_optional(db.get_ref())
     .await;
 
     match result {

@@ -15,3 +15,6 @@ pub use pass_strength::{analyze_pass, generate_pass};
 
 pub mod encryption_module;
 pub use encryption_module::*;
+
+pub mod rate_limiter;
+pub use rate_limiter::*;

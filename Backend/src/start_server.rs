@@ -1,8 +1,7 @@
 use actix_cors::Cors;
-use actix_governor::{Governor, GovernorConfigBuilder};
+use actix_limitation::RateLimiter;
 use actix_web::{http::header, middleware::Compat, web, App, HttpServer};
 use lib::*;
-use std::io::{Error, ErrorKind};
 use tracing::info;
 use tracing_actix_web::TracingLogger;
 use tracing_log::log::error;
@@ -11,21 +10,13 @@ pub async fn start(config: Settings) -> std::io::Result<()> {
     // *get the db
     let app = config.application.clone();
     let db = config.run();
-
     // *apply migration manually
     if let Err(err) = sqlx::migrate!("./migrations").run(&db).await {
         error!("❌ Failed to apply migration: {err}");
     }
 
     // *Setup rate-limiter
-    let governor_conf = GovernorConfigBuilder::default()
-        .seconds_per_request(1)
-        .burst_size(1)
-        .finish()
-        .ok_or_else(|| {
-            error!("❌ Failed to setup rate limiter");
-            Error::new(ErrorKind::Other, "Failed to setup rate limiter")
-        })?;
+    let rate_limiter = web::Data::new(initialize_limiter(&config.redis.url));
 
     let frontend_url = config.frontend.url.clone();
     let configuration = web::Data::new(config);
@@ -47,9 +38,10 @@ pub async fn start(config: Settings) -> std::io::Result<()> {
             .max_age(3600);
 
         App::new()
-            .wrap(Governor::new(&governor_conf))
+            .wrap(RateLimiter::default())
             .wrap(cors)
             .wrap(TracingLogger::default())
+            .app_data(rate_limiter.clone())
             .route("/", web::get().to(greet))
             .service(
                 web::scope("/oauth")
