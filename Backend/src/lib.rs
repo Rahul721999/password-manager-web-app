@@ -15,6 +15,7 @@ pub use models::{user_data_schema::UserData, user_schema::UserCred};
 
 pub mod utils;
 pub use utils::{
+    db_migration::apply_migration,
     error_module::AppError,
     gen_token::TokenClaims,
     hashing::{hash_pass, verify_pass},

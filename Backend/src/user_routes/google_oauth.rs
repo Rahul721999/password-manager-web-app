@@ -21,7 +21,7 @@ struct GoogleClaims {
 
 #[tracing::instrument(
     name = "🚩 OAuth request"
-    skip (db, config)
+    skip (db, config, payload)
 )]
 pub async fn google_auth(
     payload: web::Json<GoogleAuthRequest>,

@@ -18,3 +18,6 @@ pub use encryption_module::*;
 
 pub mod rate_limiter;
 pub use rate_limiter::*;
+
+pub mod db_migration;
+pub use db_migration::apply_migration;
